@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import argon2 from "argon2";
+import { logActivity } from "@/lib/activity";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,14 @@ export async function PUT(
       return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
     }
 
+    await logActivity(
+      admin.id,
+      "Kullanıcı Güncellendi",
+      "users",
+      updated.id,
+      `Kullanıcı bilgileri güncellendi: @${updated.username}`
+    );
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error("PUT user error:", error);
@@ -96,7 +105,22 @@ export async function DELETE(
       return NextResponse.json({ error: "Kendinizi silemezsiniz." }, { status: 400 });
     }
 
+    // Get username before delete
+    const [userToDelete] = await db.select().from(users).where(eq(users.id, userId));
+    if (!userToDelete) {
+      return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
+    }
+
     await db.delete(users).where(eq(users.id, userId));
+
+    await logActivity(
+      admin.id,
+      "Kullanıcı Silindi",
+      "users",
+      userId,
+      `Kullanıcı silindi: @${userToDelete.username}`
+    );
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("DELETE user error:", error);

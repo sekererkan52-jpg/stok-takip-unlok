@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [processes, setProcesses] = useState<ProcessItem[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [resetRequests, setResetRequests] = useState<any[]>([]);
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<{ id: number; fullName: string; role: string; username: string } | null>(null);
@@ -25,15 +26,17 @@ export default function Dashboard() {
       if (u) {
         setUser(u);
         
-        // Fetch users and reset requests if role is admin
+        // Fetch users, reset requests and activity logs if role is admin
         if (u.role === "admin") {
           try {
-            const [uData, rData] = await Promise.all([
+            const [uData, rData, lData] = await Promise.all([
               fetch("/api/users").then((r) => (r.ok ? r.json() : [])),
               fetch("/api/admin/reset-requests").then((r) => (r.ok ? r.json() : [])),
+              fetch("/api/admin/activity-logs").then((r) => (r.ok ? r.json() : [])),
             ]);
             setUsers(Array.isArray(uData) ? uData : []);
             setResetRequests(Array.isArray(rData) ? rData : []);
+            setActivityLogs(Array.isArray(lData) ? lData : []);
           } catch (e) {
             console.error("Failed to load admin data:", e);
           }
@@ -231,6 +234,7 @@ export default function Dashboard() {
                   resetRequests={resetRequests}
                   onResolveReset={handleResolveResetRequest}
                   onResetPassword={handleResetUserPassword}
+                  activityLogs={activityLogs}
                   onNavigate={go}
                 />
               )}

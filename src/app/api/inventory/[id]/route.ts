@@ -4,11 +4,27 @@ import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/session";
+import { logActivity } from "@/lib/activity";
+
+async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("session")?.value;
+  if (!token) return null;
+  return await verifyToken(token);
+}
+
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    }
+
     const { id } = await params;
     const itemId = Number(id);
     const body = await req.json();
@@ -33,7 +49,17 @@ export async function PUT(
       })
       .where(eq(inventory.id, itemId))
       .returning();
+
     if (!row) return Response.json({ error: "Ürün bulunamadı" }, { status: 404 });
+
+    await logActivity(
+      user.id,
+      "Ürün Güncellendi",
+      "inventory",
+      row.id,
+      `Ürün güncellendi: ${row.productName} (Yeni miktar: ${row.quantity})`
+    );
+
     return Response.json(row);
   } catch (e) {
     console.error(e);
@@ -46,9 +72,28 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    }
+
     const { id } = await params;
     const itemId = Number(id);
+
+    // Get item info before delete
+    const [item] = await db.select().from(inventory).where(eq(inventory.id, itemId));
+    if (!item) return Response.json({ error: "Ürün bulunamadı" }, { status: 404 });
+
     await db.delete(inventory).where(eq(inventory.id, itemId));
+
+    await logActivity(
+      user.id,
+      "Ürün Silindi",
+      "inventory",
+      itemId,
+      `Ürün silindi: ${item.productName}`
+    );
+
     return Response.json({ ok: true });
   } catch (e) {
     console.error(e);

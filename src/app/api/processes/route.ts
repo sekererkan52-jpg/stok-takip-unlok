@@ -75,6 +75,8 @@ export async function GET() {
   }
 }
 
+import { logActivity } from "@/lib/activity";
+
 export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
@@ -108,6 +110,15 @@ export async function POST(req: Request) {
         dueDate: body.dueDate ? new Date(body.dueDate) : null,
       })
       .returning();
+
+    await logActivity(
+      user.id,
+      "Süreç Eklendi",
+      "processes",
+      row.id,
+      `Yeni süreç/görev oluşturuldu: ${row.title}`
+    );
+
     return Response.json(row, { status: 201 });
   } catch (e) {
     console.error(e);

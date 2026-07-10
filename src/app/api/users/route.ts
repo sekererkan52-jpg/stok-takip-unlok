@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users, stores } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 import argon2 from "argon2";
+import { logActivity } from "@/lib/activity";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +101,14 @@ export async function POST(req: Request) {
         active: users.active,
         storeId: users.storeId,
       });
+
+    await logActivity(
+      admin.id,
+      "Kullanıcı Tanımlandı",
+      "users",
+      newUser.id,
+      `Yeni kullanıcı oluşturuldu: @${newUser.username} (${newUser.role})`
+    );
 
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {

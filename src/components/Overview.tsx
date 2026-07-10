@@ -19,6 +19,7 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
   { id: "recent_processes", name: "Son Süreçler Listesi", visible: false, size: "2/3", icon: "📅" },
   { id: "quick_actions", name: "Hızlı Menü Kartı", visible: false, size: "1/3", icon: "⚡" },
   { id: "reset_requests", name: "Şifre Sıfırlama Talepleri (Admin)", visible: false, size: "full", icon: "🔑" },
+  { id: "activity_logs", name: "Sistem Aktivite Günlüğü (Admin)", visible: false, size: "full", icon: "📜" },
 ];
 
 export default function Overview({
@@ -27,6 +28,7 @@ export default function Overview({
   inventory = [],
   userRole,
   resetRequests = [],
+  activityLogs = [],
   onResolveReset,
   onResetPassword,
   onNavigate,
@@ -36,6 +38,7 @@ export default function Overview({
   inventory?: InventoryItem[];
   userRole?: string;
   resetRequests?: any[];
+  activityLogs?: any[];
   onResolveReset?: (id: number) => void;
   onResetPassword?: (id: number, password: string) => Promise<{ success: boolean; error?: string }>;
   onNavigate: (tab: string) => void;
@@ -184,9 +187,9 @@ export default function Overview({
     );
   }
 
-  // Filter widgets for the current user (only admins see reset requests options)
-  const settingsWidgets = widgets.filter((w) => w.id !== "reset_requests" || userRole === "admin");
-  const visibleWidgets = widgets.filter((w) => w.visible && (w.id !== "reset_requests" || userRole === "admin"));
+  // Filter widgets for the current user (only admins see reset requests and activity logs options)
+  const settingsWidgets = widgets.filter((w) => (w.id !== "reset_requests" && w.id !== "activity_logs") || userRole === "admin");
+  const visibleWidgets = widgets.filter((w) => w.visible && ((w.id !== "reset_requests" && w.id !== "activity_logs") || userRole === "admin"));
 
   const renderWidget = (id: string, size: "1/3" | "2/3" | "full") => {
     switch (id) {
@@ -458,6 +461,63 @@ export default function Overview({
                       >
                         Tamamlandı İşaretle
                       </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case "activity_logs":
+        return (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm h-full flex flex-col justify-between">
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <span>📜</span> Sistem Aktivite Günlüğü
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Sistemde yapılan son işlemler</p>
+                </div>
+                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
+                  Son {activityLogs.length} İşlem
+                </span>
+              </div>
+
+              {activityLogs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                  <span className="text-2xl">🔍</span>
+                  <p className="text-xs font-semibold text-slate-700 mt-2">Kayıt Bulunmamaktadır</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Henüz sistemde kaydedilmiş bir işlem yok.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100 max-h-[300px] overflow-y-auto pr-1">
+                  {activityLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="py-3 flex items-start gap-3 justify-between first:pt-0 last:pb-0"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                            log.action.includes("Ekle") || log.action.includes("Tanımla") ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
+                            log.action.includes("Güncelle") || log.action.includes("Şifre") ? "bg-blue-50 text-blue-700 border border-blue-100" :
+                            "bg-rose-50 text-rose-700 border border-rose-100"
+                          }`}>
+                            {log.action}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-800">
+                            @{log.username || "sistem"} ({log.userFullName || "Bilinmiyor"})
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-medium">
+                          {log.details}
+                        </p>
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          Zaman: {new Date(log.createdAt).toLocaleString("tr-TR")}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>

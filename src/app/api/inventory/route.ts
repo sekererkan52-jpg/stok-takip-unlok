@@ -68,8 +68,15 @@ export async function GET() {
   }
 }
 
+import { logActivity } from "@/lib/activity";
+
 export async function POST(req: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    }
+
     const body = await req.json();
     if (!body?.storeId) {
       return Response.json({ error: "Mağaza seçimi zorunludur" }, { status: 400 });
@@ -91,6 +98,15 @@ export async function POST(req: Request) {
         notes: body.notes || null,
       })
       .returning();
+
+    await logActivity(
+      user.id,
+      "Ürün Eklendi",
+      "inventory",
+      row.id,
+      `Yeni ürün eklendi: ${row.productName} (${row.quantity} ${row.unit})`
+    );
+
     return Response.json(row, { status: 201 });
   } catch (e) {
     console.error(e);

@@ -4,11 +4,27 @@ import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/session";
+import { logActivity } from "@/lib/activity";
+
+async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("session")?.value;
+  if (!token) return null;
+  return await verifyToken(token);
+}
+
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    }
+
     const { id } = await params;
     const procId = Number(id);
     const body = await req.json();
@@ -32,7 +48,17 @@ export async function PUT(
       })
       .where(eq(processes.id, procId))
       .returning();
+
     if (!row) return Response.json({ error: "Süreç bulunamadı" }, { status: 404 });
+
+    await logActivity(
+      user.id,
+      "Süreç Güncellendi",
+      "processes",
+      row.id,
+      `Süreç/görev güncellendi: ${row.title} (Yeni Durum: ${row.status})`
+    );
+
     return Response.json(row);
   } catch (e) {
     console.error(e);
@@ -45,9 +71,28 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    }
+
     const { id } = await params;
     const procId = Number(id);
+
+    // Get process title before delete
+    const [proc] = await db.select().from(processes).where(eq(processes.id, procId));
+    if (!proc) return Response.json({ error: "Süreç bulunamadı" }, { status: 404 });
+
     await db.delete(processes).where(eq(processes.id, procId));
+
+    await logActivity(
+      user.id,
+      "Süreç Silindi",
+      "processes",
+      procId,
+      `Süreç/görev silindi: ${proc.title}`
+    );
+
     return Response.json({ ok: true });
   } catch (e) {
     console.error(e);

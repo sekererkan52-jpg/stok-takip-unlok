@@ -37,6 +37,8 @@ export async function GET() {
   }
 }
 
+import { logActivity } from "@/lib/activity";
+
 export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
@@ -62,6 +64,15 @@ export async function POST(req: Request) {
         notes: body.notes || null,
       })
       .returning();
+
+    await logActivity(
+      user.id,
+      "Mağaza Eklendi",
+      "stores",
+      row.id,
+      `Yeni mağaza oluşturuldu: ${row.name}`
+    );
+
     return Response.json(row, { status: 201 });
   } catch (e) {
     console.error(e);

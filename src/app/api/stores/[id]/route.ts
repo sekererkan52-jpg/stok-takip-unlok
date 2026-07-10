@@ -4,11 +4,27 @@ import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/session";
+import { logActivity } from "@/lib/activity";
+
+async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("session")?.value;
+  if (!token) return null;
+  return await verifyToken(token);
+}
+
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    }
+
     const { id } = await params;
     const storeId = Number(id);
     const body = await req.json();
@@ -30,7 +46,17 @@ export async function PUT(
       })
       .where(eq(stores.id, storeId))
       .returning();
+
     if (!row) return Response.json({ error: "Mağaza bulunamadı" }, { status: 404 });
+
+    await logActivity(
+      user.id,
+      "Mağaza Güncellendi",
+      "stores",
+      row.id,
+      `Mağaza güncellendi: ${row.name}`
+    );
+
     return Response.json(row);
   } catch (e) {
     console.error(e);
@@ -43,9 +69,28 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    }
+
     const { id } = await params;
     const storeId = Number(id);
+
+    // Get store name before delete for the log
+    const [store] = await db.select().from(stores).where(eq(stores.id, storeId));
+    if (!store) return Response.json({ error: "Mağaza bulunamadı" }, { status: 404 });
+
     await db.delete(stores).where(eq(stores.id, storeId));
+
+    await logActivity(
+      user.id,
+      "Mağaza Silindi",
+      "stores",
+      storeId,
+      `Mağaza silindi: ${store.name}`
+    );
+
     return Response.json({ ok: true });
   } catch (e) {
     console.error(e);

@@ -40,3 +40,16 @@ export type ProcessItem = {
   createdAt: string;
   storeName: string | null;
 };
+
+export type User = {
+  id: number;
+  username: string;
+  fullName: string;
+  role: string;
+  active: number;
+  lastLogin: string | null;
+  createdAt: string;
+  storeId: number | null;
+  storeName: string | null;
+};
+

@@ -1,12 +1,26 @@
 import { db } from "@/db";
 import { inventory, stores } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
+async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("session")?.value;
+  if (!token) return null;
+  return await verifyToken(token);
+}
+
 export async function GET() {
   try {
-    const rows = await db
+    const user = await getCurrentUser();
+    if (!user) {
+      return Response.json({ error: "Yetkisiz erişim." }, { status: 401 });
+    }
+
+    const query = db
       .select({
         id: inventory.id,
         storeId: inventory.storeId,
@@ -22,8 +36,31 @@ export async function GET() {
         storeName: stores.name,
       })
       .from(inventory)
-      .leftJoin(stores, eq(inventory.storeId, stores.id))
-      .orderBy(desc(inventory.createdAt));
+      .leftJoin(stores, eq(inventory.storeId, stores.id));
+
+    let rows: Array<{
+      id: number;
+      storeId: number;
+      productName: string;
+      sku: string | null;
+      category: string | null;
+      quantity: number;
+      unit: string | null;
+      price: string | null;
+      minStock: number | null;
+      notes: string | null;
+      createdAt: Date;
+      storeName: string | null;
+    }> = [];
+
+    if (user.role === "admin") {
+      rows = await query.orderBy(desc(inventory.createdAt));
+    } else if (user.storeId) {
+      rows = await query.where(eq(inventory.storeId, user.storeId)).orderBy(desc(inventory.createdAt));
+    } else {
+      rows = [];
+    }
+
     return Response.json(rows);
   } catch (e) {
     console.error(e);

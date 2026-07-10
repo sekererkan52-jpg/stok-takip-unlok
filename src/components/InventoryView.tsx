@@ -20,10 +20,12 @@ export default function InventoryView({
   items,
   stores,
   reload,
+  userRole,
 }: {
   items: InventoryItem[];
   stores: Store[];
   reload: () => void;
+  userRole?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -112,13 +114,15 @@ export default function InventoryView({
           <h2 className="text-2xl font-bold text-slate-900">Envanter</h2>
           <p className="text-sm text-slate-500">Mağaza stok ve ürünlerini yönetin</p>
         </div>
-        <button
-          onClick={openNew}
-          disabled={stores.length === 0}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          + Yeni Ürün
-        </button>
+        {userRole === "admin" && (
+          <button
+            onClick={openNew}
+            disabled={stores.length === 0}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            + Yeni Ürün
+          </button>
+        )}
       </div>
 
       {stores.length === 0 && (
@@ -169,7 +173,7 @@ export default function InventoryView({
                   <th className="px-4 py-3 font-semibold">Kategori</th>
                   <th className="px-4 py-3 font-semibold">Stok</th>
                   <th className="px-4 py-3 font-semibold">Fiyat</th>
-                  <th className="px-4 py-3 text-right font-semibold">İşlem</th>
+                  {userRole === "admin" && <th className="px-4 py-3 text-right font-semibold">İşlem</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -205,22 +209,24 @@ export default function InventoryView({
                       <td className="px-4 py-3 text-slate-600">
                         {i.price ? `₺${Number(i.price).toLocaleString("tr-TR")}` : "-"}
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => openEdit(i)}
-                            className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-200"
-                          >
-                            Düzenle
-                          </button>
-                          <button
-                            onClick={() => remove(i.id)}
-                            className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100"
-                          >
-                            Sil
-                          </button>
-                        </div>
-                      </td>
+                      {userRole === "admin" && (
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => openEdit(i)}
+                              className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-200"
+                            >
+                              Düzenle
+                            </button>
+                            <button
+                              onClick={() => remove(i.id)}
+                              className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100"
+                            >
+                              Sil
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

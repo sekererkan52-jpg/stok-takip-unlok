@@ -84,6 +84,54 @@ export function Badge({
   );
 }
 
+const StoreIllustration = () => (
+  <div className="mb-4 flex justify-center">
+    <svg className="h-24 w-24 text-indigo-500/10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="40" fill="currentColor" />
+      <path d="M30 42H70V70C70 71.1 69.1 72 68 72H32C30.9 72 30 71.1 30 70V42Z" stroke="rgb(79, 70, 229)" strokeWidth="2.5" strokeLinejoin="round" fill="white" />
+      <path d="M26 42L50 25L74 42H26Z" stroke="rgb(79, 70, 229)" strokeWidth="2.5" strokeLinejoin="round" fill="rgb(224, 231, 255)" />
+      <rect x="42" y="54" width="16" height="18" rx="2" stroke="rgb(79, 70, 229)" strokeWidth="2" fill="white" />
+      <circle cx="50" cy="34" r="3" fill="rgb(79, 70, 229)" />
+    </svg>
+  </div>
+);
+
+const InventoryIllustration = () => (
+  <div className="mb-4 flex justify-center">
+    <svg className="h-24 w-24 text-emerald-500/10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="40" fill="currentColor" />
+      <path d="M50 22L78 35L50 48L22 35L50 22Z" stroke="rgb(16, 185, 129)" strokeWidth="2.5" strokeLinejoin="round" fill="rgb(209, 250, 229)" />
+      <path d="M22 35V65L50 78V48L22 35Z" stroke="rgb(16, 185, 129)" strokeWidth="2.5" strokeLinejoin="round" fill="white" />
+      <path d="M78 35V65L50 78V48L78 35Z" stroke="rgb(16, 185, 129)" strokeWidth="2.5" strokeLinejoin="round" fill="rgb(240, 253, 244)" />
+      <path d="M35 41.5L50 48.5L65 41.5" stroke="rgb(16, 185, 129)" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  </div>
+);
+
+const ProcessIllustration = () => (
+  <div className="mb-4 flex justify-center">
+    <svg className="h-24 w-24 text-amber-500/10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="40" fill="currentColor" />
+      <rect x="32" y="28" width="36" height="46" rx="4" stroke="rgb(245, 158, 11)" strokeWidth="2.5" fill="white" />
+      <line x1="40" y1="40" x2="60" y2="40" stroke="rgb(245, 158, 11)" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="40" y1="50" x2="60" y2="50" stroke="rgb(245, 158, 11)" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="40" y1="60" x2="52" y2="60" stroke="rgb(245, 158, 11)" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="37" cy="28" r="3" fill="rgb(245, 158, 11)" />
+      <circle cx="63" cy="28" r="3" fill="rgb(245, 158, 11)" />
+    </svg>
+  </div>
+);
+
+const SearchIllustration = () => (
+  <div className="mb-4 flex justify-center">
+    <svg className="h-24 w-24 text-slate-400/10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="40" fill="currentColor" />
+      <circle cx="45" cy="45" r="14" stroke="rgb(148, 163, 184)" strokeWidth="2.5" fill="white" />
+      <line x1="55" y1="55" x2="70" y2="70" stroke="rgb(148, 163, 184)" strokeWidth="3.5" strokeLinecap="round" />
+    </svg>
+  </div>
+);
+
 export function EmptyState({
   icon,
   title,
@@ -93,9 +141,29 @@ export function EmptyState({
   title: string;
   desc: string;
 }) {
+  const renderIllustration = () => {
+    if (title === "Sonuç bulunamadı") {
+      return <SearchIllustration />;
+    }
+    
+    switch (icon) {
+      case "🏬":
+      case "stores":
+        return <StoreIllustration />;
+      case "📦":
+      case "inventory":
+        return <InventoryIllustration />;
+      case "🗂️":
+      case "processes":
+        return <ProcessIllustration />;
+      default:
+        return <div className="mb-3 text-4xl">{icon}</div>;
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white py-16 text-center">
-      <div className="mb-3 text-4xl">{icon}</div>
+      {renderIllustration()}
       <p className="text-base font-semibold text-slate-700">{title}</p>
       <p className="mt-1 max-w-sm text-sm text-slate-500">{desc}</p>
     </div>

@@ -163,7 +163,7 @@ export default function StoresView({
                   <p className="text-xs text-slate-400">{s.address}</p>
                 )}
               </div>
-              {userRole === "admin" && (
+              {(userRole === "admin" || userRole === "manager") && (
                 <div className="mt-4 flex gap-2 border-t border-slate-100 pt-3">
                   <button
                     onClick={() => openEdit(s)}
@@ -171,12 +171,14 @@ export default function StoresView({
                   >
                     Düzenle
                   </button>
-                  <button
-                    onClick={() => remove(s.id)}
-                    className="rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-100"
-                  >
-                    Sil
-                  </button>
+                  {userRole === "admin" && (
+                    <button
+                      onClick={() => remove(s.id)}
+                      className="rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-100"
+                    >
+                      Sil
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -198,6 +200,7 @@ export default function StoresView({
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Mağaza Adı" required>
               <input
+                disabled={userRole === "manager"}
                 className={inputClass}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -205,6 +208,7 @@ export default function StoresView({
             </Field>
             <Field label="Mağaza Kodu">
               <input
+                disabled={userRole === "manager"}
                 className={inputClass}
                 value={form.code}
                 onChange={(e) => setForm({ ...form, code: e.target.value })}
@@ -212,6 +216,7 @@ export default function StoresView({
             </Field>
             <Field label="Yönetici">
               <input
+                disabled={userRole === "manager"}
                 className={inputClass}
                 value={form.manager}
                 onChange={(e) => setForm({ ...form, manager: e.target.value })}
@@ -219,6 +224,7 @@ export default function StoresView({
             </Field>
             <Field label="Şehir">
               <input
+                disabled={userRole === "manager"}
                 className={inputClass}
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
@@ -233,6 +239,7 @@ export default function StoresView({
             </Field>
             <Field label="E-posta">
               <input
+                disabled={userRole === "manager"}
                 className={inputClass}
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -240,6 +247,7 @@ export default function StoresView({
             </Field>
             <Field label="Durum">
               <select
+                disabled={userRole === "manager"}
                 className={inputClass}
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
@@ -258,6 +266,7 @@ export default function StoresView({
           </Field>
           <Field label="Notlar">
             <textarea
+              disabled={userRole === "manager"}
               className={inputClass}
               rows={2}
               value={form.notes}

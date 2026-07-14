@@ -81,7 +81,7 @@ export default function UsersView({
       username: u.username,
       fullName: u.fullName,
       password: "",
-      role: u.role,
+      role: (u.role === "admin" || u.role === "manager" || u.role === "staff") ? u.role : "staff",
       active: String(u.active),
       storeId: u.storeId ? String(u.storeId) : "",
     });
@@ -367,6 +367,13 @@ export default function UsersView({
                 </option>
               ))}
             </select>
+            {currentUser && editId === currentUser.id && (
+              <p className="mt-1 text-xs text-amber-600 font-medium">
+                ⚠️ {lang === "TR" 
+                  ? "Kendi hesabınızın rolünü değiştiremezsiniz." 
+                  : "You cannot change the role of your own account."}
+              </p>
+            )}
             <p className="mt-1 text-xs text-slate-500">
               {getRoleInfo(form.role).desc}
             </p>

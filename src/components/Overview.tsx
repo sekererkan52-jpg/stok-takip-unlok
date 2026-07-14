@@ -47,6 +47,11 @@ export default function Overview({
   const [mounted, setMounted] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
+  // Activity Log Filters
+  const [logActionFilter, setLogActionFilter] = useState("");
+  const [logStartDate, setLogStartDate] = useState("");
+  const [logEndDate, setLogEndDate] = useState("");
+
   // Password reset modal state
   const [resetTarget, setResetTarget] = useState<{ id: number; username: string } | null>(null);
   const [newPassword, setNewPassword] = useState("");
@@ -207,20 +212,20 @@ export default function Overview({
               <button
                 key={s.label}
                 onClick={() => onNavigate(s.tab)}
-                className="group text-left rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-slate-300 focus:outline-none w-full"
+                className="group text-left rounded-3xl glass-card p-6 focus:outline-none w-full hover-lift transition-all duration-300"
               >
                 <div className="flex items-center justify-between">
                   <div
-                    className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${s.color} text-lg shadow-md text-white`}
+                    className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${s.color} text-lg shadow-md text-white`}
                   >
                     {s.icon}
                   </div>
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-slate-50 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors duration-300 text-xs font-bold">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-50 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors duration-300 text-xs font-bold shadow-sm">
                     →
                   </span>
                 </div>
-                <p className="mt-4 text-2xl font-extrabold text-slate-900 tracking-tight">{s.value}</p>
-                <p className="text-xs font-bold text-slate-700 mt-1">{s.label}</p>
+                <p className="mt-4 text-3xl font-extrabold text-slate-900 tracking-tight">{s.value}</p>
+                <p className="text-xs font-bold text-slate-800 mt-1 uppercase tracking-wide">{s.label}</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">{s.sub}</p>
               </button>
             ))}
@@ -229,7 +234,7 @@ export default function Overview({
 
       case "critical_stock":
         return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm h-full flex flex-col justify-between">
+          <div className="rounded-3xl glass-card p-6 h-full flex flex-col justify-between hover-lift">
             <div>
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -297,7 +302,7 @@ export default function Overview({
 
       case "recent_processes":
         return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm h-full flex flex-col justify-between">
+          <div className="rounded-3xl glass-card p-6 h-full flex flex-col justify-between hover-lift">
             <div>
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -351,7 +356,7 @@ export default function Overview({
       case "process_distribution":
         const total = processes.length;
         return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm h-full">
+          <div className="rounded-3xl glass-card p-6 h-full hover-lift">
             <h3 className="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
               <span>📈</span> Süreç Analizi
             </h3>
@@ -383,7 +388,7 @@ export default function Overview({
 
       case "quick_actions":
         return (
-          <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 to-slate-950 p-6 shadow-md text-white h-full flex flex-col justify-between">
+          <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 p-6 shadow-xl premium-glow text-white h-full flex flex-col justify-between hover-lift">
             <div>
               <h3 className="font-bold text-base mb-1">Hızlı Erişim</h3>
               <p className="text-xs text-slate-400 mb-4">İstediğiniz ekrana tek tıkla geçiş yapın</p>
@@ -413,7 +418,7 @@ export default function Overview({
 
       case "reset_requests":
         return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm h-full flex flex-col justify-between">
+          <div className="rounded-3xl glass-card p-6 h-full flex flex-col justify-between hover-lift">
             <div>
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -470,8 +475,29 @@ export default function Overview({
         );
 
       case "activity_logs":
+        const uniqueActions = Array.from(
+          new Set(activityLogs.map((log) => log.action).filter(Boolean))
+        );
+
+        const filteredLogs = activityLogs.filter((log) => {
+          if (logActionFilter && log.action !== logActionFilter) {
+            return false;
+          }
+          if (logStartDate) {
+            const start = new Date(logStartDate);
+            start.setHours(0, 0, 0, 0);
+            if (new Date(log.createdAt) < start) return false;
+          }
+          if (logEndDate) {
+            const end = new Date(logEndDate);
+            end.setHours(23, 59, 59, 999);
+            if (new Date(log.createdAt) > end) return false;
+          }
+          return true;
+        });
+
         return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm h-full flex flex-col justify-between">
+          <div className="rounded-3xl glass-card p-6 h-full flex flex-col justify-between hover-lift">
             <div>
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -481,8 +507,45 @@ export default function Overview({
                   <p className="text-xs text-slate-400 mt-0.5">Sistemde yapılan son işlemler</p>
                 </div>
                 <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
-                  Son {activityLogs.length} İşlem
+                  {filteredLogs.length} Filtrelendi / Son {activityLogs.length} İşlem
                 </span>
+              </div>
+
+              {/* Filters UI */}
+              <div className="mb-4 grid gap-3 grid-cols-1 sm:grid-cols-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-100/50">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Yapılan İşlem</label>
+                  <select
+                    value={logActionFilter}
+                    onChange={(e) => setLogActionFilter(e.target.value)}
+                    className="block w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  >
+                    <option value="">Tüm İşlemler</option>
+                    {uniqueActions.map((act) => (
+                      <option key={act} value={act}>
+                        {act}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Başlangıç</label>
+                  <input
+                    type="date"
+                    value={logStartDate}
+                    onChange={(e) => setLogStartDate(e.target.value)}
+                    className="block w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Bitiş</label>
+                  <input
+                    type="date"
+                    value={logEndDate}
+                    onChange={(e) => setLogEndDate(e.target.value)}
+                    className="block w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
               </div>
 
               {activityLogs.length === 0 ? (
@@ -491,9 +554,15 @@ export default function Overview({
                   <p className="text-xs font-semibold text-slate-700 mt-2">Kayıt Bulunmamaktadır</p>
                   <p className="text-[10px] text-slate-400 mt-0.5">Henüz sistemde kaydedilmiş bir işlem yok.</p>
                 </div>
+              ) : filteredLogs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                  <span className="text-2xl">🔍</span>
+                  <p className="text-xs font-semibold text-slate-700 mt-2">Sonuç Bulunamadı</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Filtre kriterlerine uygun işlem bulunamadı.</p>
+                </div>
               ) : (
                 <div className="divide-y divide-slate-100 max-h-[300px] overflow-y-auto pr-1">
-                  {activityLogs.map((log) => (
+                  {filteredLogs.map((log) => (
                     <div
                       key={log.id}
                       className="py-3 flex items-start gap-3 justify-between first:pt-0 last:pb-0"

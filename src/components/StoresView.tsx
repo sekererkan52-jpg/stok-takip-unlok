@@ -20,10 +20,12 @@ export default function StoresView({
   stores,
   reload,
   userRole,
+  userStoreId,
 }: {
   stores: Store[];
   reload: () => void;
   userRole?: string;
+  userStoreId?: number | null;
 }) {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -135,11 +137,11 @@ export default function StoresView({
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((s) => (
             <div
               key={s.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
+              className="glass-card rounded-3xl p-6 hover-lift transition-all duration-300"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
@@ -163,7 +165,7 @@ export default function StoresView({
                   <p className="text-xs text-slate-400">{s.address}</p>
                 )}
               </div>
-              {(userRole === "admin" || userRole === "manager") && (
+              {(userRole === "admin" || (userRole === "manager" && s.id === userStoreId)) && (
                 <div className="mt-4 flex gap-2 border-t border-slate-100 pt-3">
                   <button
                     onClick={() => openEdit(s)}

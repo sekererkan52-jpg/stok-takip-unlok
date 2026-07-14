@@ -21,6 +21,7 @@ export type InventoryItem = {
   quantity: number;
   unit: string | null;
   price: string | null;
+  currency: string;
   minStock: number | null;
   notes: string | null;
   createdAt: string;

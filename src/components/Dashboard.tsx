@@ -7,6 +7,7 @@ import StoresView from "./StoresView";
 import InventoryView from "./InventoryView";
 import ProcessesView from "./ProcessesView";
 import UsersView from "./UsersView";
+import { Modal, Field, inputClass } from "./ui";
 
 export default function Dashboard() {
   const [tab, setTab] = useState("overview");
@@ -18,7 +19,74 @@ export default function Dashboard() {
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState<{ id: number; fullName: string; role: string; username: string } | null>(null);
+  const [user, setUser] = useState<{ id: number; fullName: string; role: string; username: string; storeId?: number | null } | null>(null);
+
+  // Profile Action Menu & Password Modal States
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changePasswordError, setChangePasswordError] = useState("");
+  const [changePasswordSuccess, setChangePasswordSuccess] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".profile-menu-container")) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [profileMenuOpen]);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()) {
+      setChangePasswordError("Tüm alanlar zorunludur.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setChangePasswordError("Yeni şifreler eşleşmiyor.");
+      return;
+    }
+    if (newPassword.length < 4) {
+      setChangePasswordError("Yeni şifre en az 4 karakter olmalıdır.");
+      return;
+    }
+
+    setChangingPassword(true);
+    setChangePasswordError("");
+    setChangePasswordSuccess("");
+
+    try {
+      const res = await fetch("/api/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setChangePasswordSuccess("Şifreniz başarıyla güncellendi.");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setTimeout(() => {
+          setShowChangePasswordModal(false);
+          setChangePasswordSuccess("");
+        }, 1500);
+      } else {
+        setChangePasswordError(data.error || "Şifre güncellenemedi.");
+      }
+    } catch {
+      setChangePasswordError("Bir hata oluştu. Tekrar deneyin.");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -128,73 +196,105 @@ export default function Dashboard() {
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col justify-between transform bg-slate-900 text-slate-300 transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col justify-between transform bg-slate-950/90 backdrop-blur-xl border-r border-slate-900/60 text-slate-350 transition-transform lg:static lg:translate-x-0 ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex flex-col flex-1 overflow-y-auto">
-          <div className="flex h-16 shrink-0 items-center gap-2 border-b border-slate-800 px-6">
-            <span className="grid h-9 w-9 place-items-center rounded-lg bg-indigo-600 text-lg">
+          <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-900/50 px-6">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-xl shadow-lg shadow-indigo-600/30 text-white">
               🏪
             </span>
             <div>
-              <p className="text-sm font-bold text-white">Mağaza Paneli</p>
-              <p className="text-[11px] text-slate-400">Yönetim Sistemi</p>
+              <p className="text-sm font-extrabold tracking-wide text-white uppercase">Mağaza Paneli</p>
+              <p className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">Yönetim Sistemi</p>
             </div>
           </div>
-          <nav className="space-y-1 p-3 flex-1">
-            {navigationItems.map((n) => (
-              <button
-                key={n.key}
-                onClick={() => go(n.key)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
-                  tab === n.key
-                    ? "bg-indigo-600 text-white"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                }`}
-              >
-                <span className="text-lg">{n.icon}</span>
-                {n.label}
-              </button>
-            ))}
+          <nav className="space-y-1.5 p-4 flex-1">
+            {navigationItems.map((n) => {
+              const active = tab === n.key;
+              return (
+                <button
+                  key={n.key}
+                  onClick={() => go(n.key)}
+                  className={`nav-btn flex w-full items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold tracking-wide uppercase transition-all duration-200 ${
+                    active
+                      ? "bg-indigo-650 text-white shadow-lg shadow-indigo-650/20 border border-indigo-500/10"
+                      : "text-slate-400 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <span className="nav-icon text-base select-none inline-block">{n.icon}</span>
+                  {n.label}
+                </button>
+              );
+            })}
           </nav>
         </div>
 
         {/* Sidebar Footer with Profile & Logout */}
-        <div className="border-t border-slate-800 bg-slate-950/40 p-4 shrink-0">
+        <div className="border-t border-slate-900/50 bg-slate-950/60 p-4 shrink-0 relative profile-menu-container">
+          {/* Animated Popover Menu */}
+          {profileMenuOpen && (
+            <div className="absolute bottom-20 left-4 right-4 bg-slate-900/95 border border-slate-800 p-2 rounded-2xl shadow-2xl animate-slide-up-fade space-y-1 z-50 backdrop-blur-md">
+              <button
+                onClick={() => {
+                  setShowChangePasswordModal(true);
+                  setProfileMenuOpen(false);
+                  setChangePasswordError("");
+                  setChangePasswordSuccess("");
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                }}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-350 hover:bg-white/5 hover:text-white transition cursor-pointer"
+              >
+                🔑 Şifre Değiştir
+              </button>
+              <button
+                onClick={() => {
+                  setProfileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+              >
+                🚪 Çıkış Yap
+              </button>
+            </div>
+          )}
+
           {user && (
-            <div className="mb-3 flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-slate-850 text-white font-bold uppercase text-xs ring-2 ring-indigo-500/20">
+            <button
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              className="mb-0 flex w-full items-center gap-3 bg-white/5 hover:bg-white/10 p-3 rounded-2xl border border-white/5 transition-all text-left group active:scale-[0.98] cursor-pointer"
+            >
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 text-white font-bold uppercase text-xs shadow-md shadow-indigo-600/10 group-hover:scale-105 transition-transform duration-200">
                 {user.fullName.slice(0, 2)}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-white">{user.fullName}</p>
-                <p className="truncate text-[10px] text-slate-400 capitalize">{user.role}</p>
+                <p className="truncate text-xs font-bold text-white leading-none">{user.fullName}</p>
+                <p className="truncate text-[10px] text-slate-500 font-semibold mt-1 uppercase tracking-wider">{user.role}</p>
               </div>
-            </div>
+              <span className="text-[10px] text-slate-550 font-extrabold group-hover:text-slate-350 transition-colors select-none">
+                {profileMenuOpen ? "▲" : "▼"}
+              </span>
+            </button>
           )}
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-rose-500/10 border border-rose-500/20 py-2 text-xs font-semibold text-rose-400 transition-all hover:bg-rose-500/20 active:scale-[0.98]"
-          >
-            🚪 Çıkış Yap
-          </button>
-          <div className="mt-3 text-center text-[10px] text-slate-600">
-            Lokal Mağaza Yönetim Paneli
+          <div className="mt-4 text-center text-[9px] font-bold text-slate-700 uppercase tracking-widest">
+            Lokal Yönetim v2.1
           </div>
         </div>
       </aside>
 
       {menuOpen && (
         <div
-          className="fixed inset-0 z-30 bg-slate-900/50 lg:hidden"
+          className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-sm lg:hidden"
           onClick={() => setMenuOpen(false)}
         />
       )}
 
       {/* Main */}
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200/50 bg-slate-50/70 px-4 backdrop-blur-md lg:px-8">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMenuOpen(true)}
@@ -203,13 +303,13 @@ export default function Dashboard() {
             >
               ☰
             </button>
-            <h1 className="text-lg font-semibold text-slate-800">
+            <h1 className="text-base font-extrabold text-slate-900 uppercase tracking-wide">
               {navigationItems.find((n) => n.key === tab)?.label}
             </h1>
           </div>
           <button
             onClick={load}
-            className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-200"
+            className="rounded-xl border border-slate-200/80 bg-white shadow-sm px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 active:scale-95"
           >
             ↻ Yenile
           </button>
@@ -239,7 +339,7 @@ export default function Dashboard() {
                 />
               )}
               {tab === "stores" && (
-                <StoresView stores={stores} reload={load} userRole={user?.role} />
+                <StoresView stores={stores} reload={load} userRole={user?.role} userStoreId={user?.storeId} />
               )}
               {tab === "inventory" && (
                 <InventoryView
@@ -247,6 +347,7 @@ export default function Dashboard() {
                   stores={stores}
                   reload={load}
                   userRole={user?.role}
+                  userStoreId={user?.storeId}
                 />
               )}
 
@@ -269,6 +370,69 @@ export default function Dashboard() {
           )}
         </main>
       </div>
+
+      {/* Change Password Modal */}
+      <Modal
+        open={showChangePasswordModal}
+        title="Şifre Değiştir"
+        onClose={() => setShowChangePasswordModal(false)}
+      >
+        <form onSubmit={handleChangePassword} className="space-y-4">
+          {changePasswordError && (
+            <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              {changePasswordError}
+            </div>
+          )}
+          {changePasswordSuccess && (
+            <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              {changePasswordSuccess}
+            </div>
+          )}
+          <Field label="Mevcut Şifre" required>
+            <input
+              type="password"
+              required
+              className={inputClass}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </Field>
+          <Field label="Yeni Şifre" required>
+            <input
+              type="password"
+              required
+              className={inputClass}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </Field>
+          <Field label="Yeni Şifre (Tekrar)" required>
+            <input
+              type="password"
+              required
+              className={inputClass}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </Field>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowChangePasswordModal(false)}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+            >
+              İptal
+            </button>
+            <button
+              type="submit"
+              disabled={changingPassword}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+            >
+              {changingPassword ? "Güncelleniyor..." : "Şifreyi Güncelle"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

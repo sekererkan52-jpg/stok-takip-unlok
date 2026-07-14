@@ -21,19 +21,26 @@ export async function PUT(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== "admin") {
-      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    if (!user) {
+      return Response.json({ error: "Oturum açılmadı." }, { status: 401 });
     }
 
     const { id } = await params;
     const storeId = Number(id);
-    const body = await req.json();
-    if (!body?.name || String(body.name).trim() === "") {
-      return Response.json({ error: "Mağaza adı zorunludur" }, { status: 400 });
+
+    const isAuthorized = user.role === "admin" || (user.role === "manager" && user.storeId === storeId);
+    if (!isAuthorized) {
+      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
     }
-    const [row] = await db
-      .update(stores)
-      .set({
+
+    const body = await req.json();
+    let updateFields: any = {};
+
+    if (user.role === "admin") {
+      if (!body?.name || String(body.name).trim() === "") {
+        return Response.json({ error: "Mağaza adı zorunludur" }, { status: 400 });
+      }
+      updateFields = {
         name: String(body.name).trim(),
         code: body.code || null,
         manager: body.manager || null,
@@ -43,7 +50,34 @@ export async function PUT(
         address: body.address || null,
         status: body.status || "aktif",
         notes: body.notes || null,
-      })
+      };
+    } else {
+      // manager updating only phone and address
+      const [existing] = await db
+        .select()
+        .from(stores)
+        .where(eq(stores.id, storeId));
+      
+      if (!existing) {
+        return Response.json({ error: "Mağaza bulunamadı" }, { status: 404 });
+      }
+
+      updateFields = {
+        name: existing.name,
+        code: existing.code,
+        manager: existing.manager,
+        phone: body.phone !== undefined ? body.phone : existing.phone,
+        email: existing.email,
+        city: existing.city,
+        address: body.address !== undefined ? body.address : existing.address,
+        status: existing.status,
+        notes: existing.notes,
+      };
+    }
+
+    const [row] = await db
+      .update(stores)
+      .set(updateFields)
       .where(eq(stores.id, storeId))
       .returning();
 

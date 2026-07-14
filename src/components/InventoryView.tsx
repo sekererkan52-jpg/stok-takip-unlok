@@ -12,6 +12,7 @@ const emptyForm = {
   quantity: "0",
   unit: "adet",
   price: "",
+  currency: "TL",
   minStock: "0",
   notes: "",
 };
@@ -21,11 +22,13 @@ export default function InventoryView({
   stores,
   reload,
   userRole,
+  userStoreId,
 }: {
   items: InventoryItem[];
   stores: Store[];
   reload: () => void;
   userRole?: string;
+  userStoreId?: number | null;
 }) {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -36,7 +39,8 @@ export default function InventoryView({
   const [storeFilter, setStoreFilter] = useState("");
 
   function openNew() {
-    setForm({ ...emptyForm, storeId: stores[0]?.id ? String(stores[0].id) : "" });
+    const defaultStoreId = userRole === "manager" && userStoreId ? String(userStoreId) : (stores[0]?.id ? String(stores[0].id) : "");
+    setForm({ ...emptyForm, storeId: defaultStoreId });
     setEditId(null);
     setError("");
     setOpen(true);
@@ -51,6 +55,7 @@ export default function InventoryView({
       quantity: String(i.quantity),
       unit: i.unit || "adet",
       price: i.price || "",
+      currency: i.currency || "TL",
       minStock: String(i.minStock ?? 0),
       notes: i.notes || "",
     });
@@ -114,7 +119,7 @@ export default function InventoryView({
           <h2 className="text-2xl font-bold text-slate-900">Envanter</h2>
           <p className="text-sm text-slate-500">Mağaza stok ve ürünlerini yönetin</p>
         </div>
-        {userRole === "admin" && (
+        {(userRole === "admin" || userRole === "manager") && (
           <button
             onClick={openNew}
             disabled={stores.length === 0}
@@ -163,7 +168,7 @@ export default function InventoryView({
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-3xl border border-slate-200/50 bg-white/70 backdrop-blur-md shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
@@ -173,7 +178,7 @@ export default function InventoryView({
                   <th className="px-4 py-3 font-semibold">Kategori</th>
                   <th className="px-4 py-3 font-semibold">Stok</th>
                   <th className="px-4 py-3 font-semibold">Fiyat</th>
-                  {userRole === "admin" && <th className="px-4 py-3 text-right font-semibold">İşlem</th>}
+                  {(userRole === "admin" || userRole === "manager") && <th className="px-4 py-3 text-right font-semibold">İşlem</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -206,10 +211,10 @@ export default function InventoryView({
                           {low && <Badge color="red">Düşük</Badge>}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {i.price ? `₺${Number(i.price).toLocaleString("tr-TR")}` : "-"}
+                      <td className="px-4 py-3 text-slate-600 font-medium">
+                        {i.price ? `${i.currency === "USD" ? "$" : i.currency === "EUR" ? "€" : "₺"}${Number(i.price).toLocaleString("tr-TR")}` : "-"}
                       </td>
-                      {userRole === "admin" && (
+                      {(userRole === "admin" || (userRole === "manager" && i.storeId === userStoreId)) && (
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
                             <button
@@ -250,6 +255,7 @@ export default function InventoryView({
           <Field label="Mağaza" required>
             <select
               className={inputClass}
+              disabled={userRole === "manager"}
               value={form.storeId}
               onChange={(e) => setForm({ ...form, storeId: e.target.value })}
             >
@@ -309,15 +315,32 @@ export default function InventoryView({
                 onChange={(e) => setForm({ ...form, minStock: e.target.value })}
               />
             </Field>
-            <Field label="Birim Fiyat (₺)">
-              <input
-                type="number"
-                step="0.01"
-                className={inputClass}
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-              />
-            </Field>
+            <div className="col-span-2">
+              <Field label="Birim Fiyat">
+                <input
+                  type="number"
+                  step="0.01"
+                  disabled={userRole === "manager"}
+                  className={inputClass}
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                />
+              </Field>
+            </div>
+            <div>
+              <Field label="Para Birimi">
+                <select
+                  disabled={userRole === "manager"}
+                  className={inputClass}
+                  value={form.currency}
+                  onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                >
+                  <option value="TL">TL (₺)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                </select>
+              </Field>
+            </div>
           </div>
           <Field label="Notlar">
             <textarea

@@ -82,45 +82,53 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen bg-slate-950">
       {/* Left side - Hero Image (hidden on mobile) */}
-      <div className="relative hidden w-1/2 items-center justify-center bg-slate-900 lg:flex overflow-hidden border-r border-slate-900">
+      <div className="relative hidden w-1/2 items-center justify-center bg-slate-900 lg:flex overflow-hidden border-r border-white/5">
         <div 
-          className="absolute inset-0 z-0 opacity-40 bg-cover bg-center" 
+          className="absolute inset-0 z-0 opacity-20 bg-cover bg-center" 
           style={{ backgroundImage: "url('/login_hero.jpg')" }} 
         />
-        <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-950/80 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-950/90 to-transparent z-10" />
+        
+        {/* Decorative Orb */}
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl bg-glow-orb" />
+        
         <div className="relative z-20 max-w-md px-8 text-left">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30 text-2xl mb-6">
             🏪
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-4">
-            Stok & Süreç Yönetiminde Yeni Nesil Deneyim
+          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-4 uppercase">
+            Stok & Süreç Yönetimi
           </h1>
-          <p className="text-slate-400 text-sm leading-relaxed mb-6">
+          <p className="text-slate-400 text-sm leading-relaxed mb-6 font-medium">
             Gelişmiş analitik araçlar, anlık envanter takibi ve dinamik mağaza yönetimi ile işinizi kolaylaştırın.
           </p>
           <div className="flex items-center gap-3">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-            <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Tüm Sistemler Aktif</span>
+            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Tüm Sistemler Aktif</span>
           </div>
         </div>
       </div>
 
       {/* Right side - Login Form */}
-      <div className="flex w-full items-center justify-center px-4 py-12 sm:px-6 lg:w-1/2 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
+      <div className="relative flex w-full items-center justify-center px-4 py-12 sm:px-6 lg:w-1/2 lg:px-8 bg-slate-950 overflow-hidden">
+        {/* Glow Orbs in Background */}
+        <div className="absolute top-1/4 left-1/4 h-80 w-80 rounded-full bg-indigo-600/10 blur-3xl bg-glow-orb select-none pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 h-80 w-80 rounded-full bg-emerald-600/5 blur-3xl bg-glow-orb select-none pointer-events-none" />
+        
+        <div className="relative z-10 w-full max-w-md space-y-8">
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30 ring-4 ring-indigo-500/10 text-2xl lg:hidden">
               🏪
             </div>
-            <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-white uppercase">
               Stok Takip Paneli
             </h2>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-slate-450 font-medium">
               Yönetim sistemine erişmek için giriş yapın
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 shadow-2xl backdrop-blur-md">
+          <div className="rounded-3xl border border-white/5 bg-white/5 p-8 shadow-2xl backdrop-blur-xl">
             {error && (
               <div className="mb-6 flex items-start gap-3 rounded-lg bg-rose-500/10 p-4 border border-rose-500/20 text-sm text-rose-400">
                 <span className="text-base select-none">⚠️</span>

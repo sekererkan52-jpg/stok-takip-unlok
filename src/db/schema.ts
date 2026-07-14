@@ -34,6 +34,7 @@ export const inventory = pgTable("inventory", {
   quantity: integer("quantity").notNull().default(0),
   unit: text("unit").default("adet"),
   price: numeric("price", { precision: 12, scale: 2 }),
+  currency: text("currency").notNull().default("TL"),
   minStock: integer("min_stock").default(0),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

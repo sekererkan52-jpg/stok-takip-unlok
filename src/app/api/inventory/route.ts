@@ -30,6 +30,7 @@ export async function GET() {
         quantity: inventory.quantity,
         unit: inventory.unit,
         price: inventory.price,
+        currency: inventory.currency,
         minStock: inventory.minStock,
         notes: inventory.notes,
         createdAt: inventory.createdAt,
@@ -47,6 +48,7 @@ export async function GET() {
       quantity: number;
       unit: string | null;
       price: string | null;
+      currency: string;
       minStock: number | null;
       notes: string | null;
       createdAt: Date;
@@ -73,27 +75,40 @@ import { logActivity } from "@/lib/activity";
 export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== "admin") {
-      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    if (!user) {
+      return Response.json({ error: "Oturum açılmadı." }, { status: 401 });
     }
 
     const body = await req.json();
     if (!body?.storeId) {
       return Response.json({ error: "Mağaza seçimi zorunludur" }, { status: 400 });
     }
+
+    const storeId = Number(body.storeId);
+
+    const isAuthorized = user.role === "admin" || (user.role === "manager" && user.storeId === storeId);
+    if (!isAuthorized) {
+      return Response.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 });
+    }
+
     if (!body?.productName || String(body.productName).trim() === "") {
       return Response.json({ error: "Ürün adı zorunludur" }, { status: 400 });
     }
+
+    // Force price to null for manager, only admin can set/update price
+    const priceVal = user.role === "admin" ? (body.price ? String(body.price) : null) : null;
+
     const [row] = await db
       .insert(inventory)
       .values({
-        storeId: Number(body.storeId),
+        storeId,
         productName: String(body.productName).trim(),
         sku: body.sku || null,
         category: body.category || null,
         quantity: Number(body.quantity) || 0,
         unit: body.unit || "adet",
-        price: body.price ? String(body.price) : null,
+        price: priceVal,
+        currency: body.currency || "TL",
         minStock: Number(body.minStock) || 0,
         notes: body.notes || null,
       })

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Store } from "@/lib/types";
 import { Modal, Field, inputClass, Badge, EmptyState } from "./ui";
 
+import { translations } from "@/lib/translations";
+
 const emptyForm = {
   name: "",
   code: "",
@@ -21,11 +23,13 @@ export default function StoresView({
   reload,
   userRole,
   userStoreId,
+  lang = "TR",
 }: {
   stores: Store[];
   reload: () => void;
   userRole?: string;
   userStoreId?: number | null;
+  lang?: "TR" | "EN";
 }) {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -33,6 +37,10 @@ export default function StoresView({
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
+
+  const t = (key: string): string => {
+    return translations[lang]?.[key] || key;
+  };
 
   function openNew() {
     setForm(emptyForm);
@@ -104,15 +112,15 @@ export default function StoresView({
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Mağazalar</h2>
-          <p className="text-sm text-slate-500">Mağaza bilgilerini yönetin</p>
+          <h2 className="text-2xl font-bold text-slate-900">{t("storesTitle")}</h2>
+          <p className="text-sm text-slate-500">{t("storesDesc")}</p>
         </div>
         {userRole === "admin" && (
           <button
             onClick={openNew}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 cursor-pointer"
           >
-            + Yeni Mağaza
+            {t("newStore")}
           </button>
         )}
       </div>
@@ -121,7 +129,7 @@ export default function StoresView({
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Mağaza, şehir veya yönetici ara..."
+          placeholder={t("searchStorePlaceholder")}
           className={inputClass + " max-w-md"}
         />
       </div>
@@ -129,11 +137,11 @@ export default function StoresView({
       {filtered.length === 0 ? (
         <EmptyState
           icon="🏬"
-          title={stores.length === 0 ? "Henüz mağaza yok" : "Sonuç bulunamadı"}
+          title={stores.length === 0 ? t("noStoresText") : t("noResult")}
           desc={
             stores.length === 0
-              ? "İlk mağazanızı eklemek için 'Yeni Mağaza' butonuna tıklayın."
-              : "Arama kriterlerinize uygun mağaza bulunamadı."
+              ? t("noStoresDesc")
+              : t("noResultDesc")
           }
         />
       ) : (
@@ -149,11 +157,11 @@ export default function StoresView({
                     {s.name}
                   </h3>
                   {s.code && (
-                    <p className="text-xs text-slate-400">Kod: {s.code}</p>
+                    <p className="text-xs text-slate-400">{t("storeCode")}: {s.code}</p>
                   )}
                 </div>
                 <Badge color={s.status === "aktif" ? "green" : "gray"}>
-                  {s.status === "aktif" ? "Aktif" : "Pasif"}
+                  {s.status === "aktif" ? t("active") : t("passive")}
                 </Badge>
               </div>
               <div className="mt-4 space-y-1.5 text-sm text-slate-600">
@@ -169,16 +177,16 @@ export default function StoresView({
                 <div className="mt-4 flex gap-2 border-t border-slate-100 pt-3">
                   <button
                     onClick={() => openEdit(s)}
-                    className="flex-1 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                    className="flex-1 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 cursor-pointer"
                   >
-                    Düzenle
+                    {t("edit")}
                   </button>
                   {userRole === "admin" && (
                     <button
                       onClick={() => remove(s.id)}
-                      className="rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-100"
+                      className="rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-100 cursor-pointer"
                     >
-                      Sil
+                      {t("delete")}
                     </button>
                   )}
                 </div>
@@ -190,7 +198,7 @@ export default function StoresView({
 
       <Modal
         open={open}
-        title={editId ? "Mağaza Düzenle" : "Yeni Mağaza"}
+        title={editId ? t("editStoreTitle") : t("newStoreTitle")}
         onClose={() => setOpen(false)}
       >
         <div className="space-y-4">
@@ -200,7 +208,7 @@ export default function StoresView({
             </div>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Mağaza Adı" required>
+            <Field label={t("storeName")} required>
               <input
                 disabled={userRole === "manager"}
                 className={inputClass}
@@ -208,7 +216,7 @@ export default function StoresView({
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </Field>
-            <Field label="Mağaza Kodu">
+            <Field label={t("storeCode")}>
               <input
                 disabled={userRole === "manager"}
                 className={inputClass}
@@ -216,7 +224,7 @@ export default function StoresView({
                 onChange={(e) => setForm({ ...form, code: e.target.value })}
               />
             </Field>
-            <Field label="Yönetici">
+            <Field label={t("storeManager")}>
               <input
                 disabled={userRole === "manager"}
                 className={inputClass}
@@ -224,7 +232,7 @@ export default function StoresView({
                 onChange={(e) => setForm({ ...form, manager: e.target.value })}
               />
             </Field>
-            <Field label="Şehir">
+            <Field label={t("storeCity")}>
               <input
                 disabled={userRole === "manager"}
                 className={inputClass}
@@ -232,14 +240,14 @@ export default function StoresView({
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
               />
             </Field>
-            <Field label="Telefon">
+            <Field label={t("storePhone")}>
               <input
                 className={inputClass}
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
               />
             </Field>
-            <Field label="E-posta">
+            <Field label={t("storeEmail")}>
               <input
                 disabled={userRole === "manager"}
                 className={inputClass}
@@ -247,15 +255,15 @@ export default function StoresView({
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </Field>
-            <Field label="Durum">
+            <Field label={t("storeStatus")}>
               <select
                 disabled={userRole === "manager"}
                 className={inputClass}
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
               >
-                <option value="aktif">Aktif</option>
-                <option value="pasif">Pasif</option>
+                <option value="aktif">{t("active")}</option>
+                <option value="pasif">{t("passive")}</option>
               </select>
             </Field>
           </div>
@@ -266,7 +274,7 @@ export default function StoresView({
               onChange={(e) => setForm({ ...form, address: e.target.value })}
             />
           </Field>
-          <Field label="Notlar">
+          <Field label={t("notes")}>
             <textarea
               disabled={userRole === "manager"}
               className={inputClass}
@@ -278,16 +286,16 @@ export default function StoresView({
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={() => setOpen(false)}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 cursor-pointer"
             >
-              İptal
+              {t("cancel")}
             </button>
             <button
               onClick={save}
               disabled={saving}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60 cursor-pointer"
             >
-              {saving ? "Kaydediliyor..." : "Kaydet"}
+              {saving ? t("savingStore") : t("save")}
             </button>
           </div>
         </div>

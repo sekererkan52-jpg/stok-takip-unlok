@@ -8,6 +8,7 @@ import InventoryView from "./InventoryView";
 import ProcessesView from "./ProcessesView";
 import UsersView from "./UsersView";
 import { Modal, Field, inputClass } from "./ui";
+import { translations } from "@/lib/translations";
 
 export default function Dashboard() {
   const [tab, setTab] = useState("overview");
@@ -20,6 +21,43 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<{ id: number; fullName: string; role: string; username: string; storeId?: number | null } | null>(null);
+
+  const [lang, setLang] = useState<"TR" | "EN">("TR");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  // Load preferences
+  useEffect(() => {
+    const savedLang = localStorage.getItem("preferred_lang") as "TR" | "EN";
+    if (savedLang) setLang(savedLang);
+
+    const savedTheme = localStorage.getItem("preferred_theme") as "light" | "dark";
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
+  }, []);
+
+  // Update theme class on HTML element
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("preferred_theme", theme);
+  }, [theme]);
+
+  // Persist language choice
+  const changeLanguage = (newLang: "TR" | "EN") => {
+    setLang(newLang);
+    localStorage.setItem("preferred_lang", newLang);
+  };
+
+  const t = (key: string): string => {
+    return translations[lang]?.[key] || key;
+  };
 
   // Profile Action Menu & Password Modal States
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -185,11 +223,11 @@ export default function Dashboard() {
   }
 
   const navigationItems = [
-    { key: "overview", label: "Genel Bakış", icon: "📊" },
-    { key: "stores", label: "Mağazalar", icon: "🏬" },
-    { key: "inventory", label: "Envanter", icon: "📦" },
-    { key: "processes", label: "Süreçler", icon: "🗂️" },
-    ...(user?.role === "admin" ? [{ key: "users", label: "Kullanıcılar", icon: "👥" }] : []),
+    { key: "overview", label: t("overview"), icon: "📊" },
+    { key: "stores", label: t("stores"), icon: "🏬" },
+    { key: "inventory", label: t("inventory"), icon: "📦" },
+    { key: "processes", label: t("processes"), icon: "🗂️" },
+    ...(user?.role === "admin" ? [{ key: "users", label: t("users"), icon: "👥" }] : []),
   ];
 
   return (
@@ -248,16 +286,16 @@ export default function Dashboard() {
                 }}
                 className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-350 hover:bg-white/5 hover:text-white transition cursor-pointer"
               >
-                🔑 Şifre Değiştir
+                🔑 {t("changePassword")}
               </button>
               <button
                 onClick={() => {
                   setProfileMenuOpen(false);
                   handleLogout();
                 }}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold text-rose-450 hover:bg-rose-500/10 transition cursor-pointer"
               >
-                🚪 Çıkış Yap
+                🚪 {t("logout")}
               </button>
             </div>
           )}
@@ -307,12 +345,36 @@ export default function Dashboard() {
               {navigationItems.find((n) => n.key === tab)?.label}
             </h1>
           </div>
-          <button
-            onClick={load}
-            className="rounded-xl border border-slate-200/80 bg-white shadow-sm px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 active:scale-95"
-          >
-            ↻ Yenile
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              className="rounded-xl border border-slate-200/80 bg-white shadow-sm p-2 text-sm transition hover:bg-slate-50 active:scale-95 cursor-pointer dark:bg-slate-900 dark:border-slate-800 dark:hover:bg-slate-850"
+              title={theme === "light" ? "Karanlık Tema" : "Aydınlık Tema"}
+            >
+              {theme === "light" ? "🌙" : "☀️"}
+            </button>
+
+            {/* Language Selector Dropdown */}
+            <div className="relative">
+              <select
+                value={lang}
+                onChange={(e) => changeLanguage(e.target.value as "TR" | "EN")}
+                className="rounded-xl border border-slate-200/80 bg-white shadow-sm px-3 py-2 text-xs font-bold text-slate-700 outline-none transition hover:bg-slate-50 cursor-pointer dark:bg-slate-900 dark:border-slate-800 dark:hover:bg-slate-850"
+              >
+                <option value="TR">🇹🇷 TR</option>
+                <option value="EN">🇺🇸 EN</option>
+              </select>
+            </div>
+
+            {/* Refresh Button */}
+            <button
+              onClick={load}
+              className="rounded-xl border border-slate-200/80 bg-white shadow-sm px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 active:scale-95 cursor-pointer dark:bg-slate-900 dark:border-slate-800 dark:hover:bg-slate-850"
+            >
+              ↻ {t("refresh")}
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 px-4 py-6 lg:px-8">
@@ -336,10 +398,11 @@ export default function Dashboard() {
                   onResetPassword={handleResetUserPassword}
                   activityLogs={activityLogs}
                   onNavigate={go}
+                  lang={lang}
                 />
               )}
               {tab === "stores" && (
-                <StoresView stores={stores} reload={load} userRole={user?.role} userStoreId={user?.storeId} />
+                <StoresView stores={stores} reload={load} userRole={user?.role} userStoreId={user?.storeId} lang={lang} />
               )}
               {tab === "inventory" && (
                 <InventoryView
@@ -348,6 +411,7 @@ export default function Dashboard() {
                   reload={load}
                   userRole={user?.role}
                   userStoreId={user?.storeId}
+                  lang={lang}
                 />
               )}
 
@@ -374,7 +438,7 @@ export default function Dashboard() {
       {/* Change Password Modal */}
       <Modal
         open={showChangePasswordModal}
-        title="Şifre Değiştir"
+        title={t("changePassword")}
         onClose={() => setShowChangePasswordModal(false)}
       >
         <form onSubmit={handleChangePassword} className="space-y-4">
@@ -388,7 +452,7 @@ export default function Dashboard() {
               {changePasswordSuccess}
             </div>
           )}
-          <Field label="Mevcut Şifre" required>
+          <Field label={t("currentPassword")} required>
             <input
               type="password"
               required
@@ -397,7 +461,7 @@ export default function Dashboard() {
               onChange={(e) => setCurrentPassword(e.target.value)}
             />
           </Field>
-          <Field label="Yeni Şifre" required>
+          <Field label={t("newPassword")} required>
             <input
               type="password"
               required
@@ -406,7 +470,7 @@ export default function Dashboard() {
               onChange={(e) => setNewPassword(e.target.value)}
             />
           </Field>
-          <Field label="Yeni Şifre (Tekrar)" required>
+          <Field label={t("confirmNewPassword")} required>
             <input
               type="password"
               required
@@ -421,14 +485,14 @@ export default function Dashboard() {
               onClick={() => setShowChangePasswordModal(false)}
               className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
             >
-              İptal
+              {t("cancel")}
             </button>
             <button
               type="submit"
               disabled={changingPassword}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
             >
-              {changingPassword ? "Güncelleniyor..." : "Şifreyi Güncelle"}
+              {changingPassword ? t("updating") : t("save")}
             </button>
           </div>
         </form>

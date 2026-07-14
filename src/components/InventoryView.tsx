@@ -17,18 +17,22 @@ const emptyForm = {
   notes: "",
 };
 
+import { translations } from "@/lib/translations";
+
 export default function InventoryView({
   items,
   stores,
   reload,
   userRole,
   userStoreId,
+  lang = "TR",
 }: {
   items: InventoryItem[];
   stores: Store[];
   reload: () => void;
   userRole?: string;
   userStoreId?: number | null;
+  lang?: "TR" | "EN";
 }) {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -37,6 +41,10 @@ export default function InventoryView({
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [storeFilter, setStoreFilter] = useState("");
+
+  const t = (key: string): string => {
+    return translations[lang]?.[key] || key;
+  };
 
   function openNew() {
     const defaultStoreId = userRole === "manager" && userStoreId ? String(userStoreId) : (stores[0]?.id ? String(stores[0].id) : "");
@@ -116,16 +124,16 @@ export default function InventoryView({
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Envanter</h2>
-          <p className="text-sm text-slate-500">Mağaza stok ve ürünlerini yönetin</p>
+          <h2 className="text-2xl font-bold text-slate-900">{t("inventoryTitle")}</h2>
+          <p className="text-sm text-slate-500">{t("inventoryDesc")}</p>
         </div>
         {(userRole === "admin" || userRole === "manager") && (
           <button
             onClick={openNew}
             disabled={stores.length === 0}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >
-            + Yeni Ürün
+            {t("newInventoryItem")}
           </button>
         )}
       </div>
@@ -140,7 +148,7 @@ export default function InventoryView({
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Ürün, SKU veya kategori ara..."
+          placeholder={t("searchInventoryPlaceholder")}
           className={inputClass + " max-w-xs"}
         />
         <select
@@ -148,7 +156,7 @@ export default function InventoryView({
           onChange={(e) => setStoreFilter(e.target.value)}
           className={inputClass + " max-w-xs"}
         >
-          <option value="">Tüm Mağazalar</option>
+          <option value="">{t("allStoresFilter")}</option>
           {stores.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
@@ -160,11 +168,11 @@ export default function InventoryView({
       {filtered.length === 0 ? (
         <EmptyState
           icon="📦"
-          title={items.length === 0 ? "Henüz ürün yok" : "Sonuç bulunamadı"}
+          title={items.length === 0 ? t("noInventoryText") : t("noResult")}
           desc={
             items.length === 0
-              ? "İlk ürününüzü eklemek için 'Yeni Ürün' butonuna tıklayın."
-              : "Arama kriterlerinize uygun ürün bulunamadı."
+              ? t("noInventoryDesc")
+              : t("noResultDesc")
           }
         />
       ) : (
@@ -173,12 +181,12 @@ export default function InventoryView({
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Ürün</th>
-                  <th className="px-4 py-3 font-semibold">Mağaza</th>
-                  <th className="px-4 py-3 font-semibold">Kategori</th>
-                  <th className="px-4 py-3 font-semibold">Stok</th>
-                  <th className="px-4 py-3 font-semibold">Fiyat</th>
-                  {(userRole === "admin" || userRole === "manager") && <th className="px-4 py-3 text-right font-semibold">İşlem</th>}
+                  <th className="px-4 py-3 font-semibold">{t("inventoryProduct")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("inventoryStore")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("inventoryCategory")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("inventoryStock")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("inventoryPrice")}</th>
+                  {(userRole === "admin" || userRole === "manager") && <th className="px-4 py-3 text-right font-semibold">{t("actions")}</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -208,7 +216,7 @@ export default function InventoryView({
                           <span className="font-medium text-slate-900">
                             {i.quantity} {i.unit}
                           </span>
-                          {low && <Badge color="red">Düşük</Badge>}
+                          {low && <Badge color="red">{lang === "TR" ? "Düşük" : "Low"}</Badge>}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-slate-600 font-medium">
@@ -219,15 +227,15 @@ export default function InventoryView({
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => openEdit(i)}
-                              className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-200"
+                              className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-200 cursor-pointer"
                             >
-                              Düzenle
+                              {t("edit")}
                             </button>
                             <button
                               onClick={() => remove(i.id)}
-                              className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100"
+                              className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100 cursor-pointer"
                             >
-                              Sil
+                              {t("delete")}
                             </button>
                           </div>
                         </td>
@@ -243,7 +251,7 @@ export default function InventoryView({
 
       <Modal
         open={open}
-        title={editId ? "Ürün Düzenle" : "Yeni Ürün"}
+        title={editId ? t("editProductTitle") : t("newProductTitle")}
         onClose={() => setOpen(false)}
       >
         <div className="space-y-4">
@@ -268,7 +276,7 @@ export default function InventoryView({
             </select>
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Ürün Adı" required>
+            <Field label={t("inventoryProductName")} required>
               <input
                 className={inputClass}
                 value={form.productName}
@@ -277,21 +285,21 @@ export default function InventoryView({
                 }
               />
             </Field>
-            <Field label="SKU / Barkod">
+            <Field label={t("inventorySku")}>
               <input
                 className={inputClass}
                 value={form.sku}
                 onChange={(e) => setForm({ ...form, sku: e.target.value })}
               />
             </Field>
-            <Field label="Kategori">
+            <Field label={t("inventoryCategory")}>
               <input
                 className={inputClass}
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
               />
             </Field>
-            <Field label="Birim">
+            <Field label={t("inventoryUnit")}>
               <input
                 className={inputClass}
                 value={form.unit}
@@ -299,7 +307,7 @@ export default function InventoryView({
                 placeholder="adet, kg, kutu..."
               />
             </Field>
-            <Field label="Stok Miktarı">
+            <Field label={t("inventoryQuantity")}>
               <input
                 type="number"
                 className={inputClass}
@@ -307,7 +315,7 @@ export default function InventoryView({
                 onChange={(e) => setForm({ ...form, quantity: e.target.value })}
               />
             </Field>
-            <Field label="Min. Stok (uyarı)">
+            <Field label={t("inventoryMinStock")}>
               <input
                 type="number"
                 className={inputClass}
@@ -316,7 +324,7 @@ export default function InventoryView({
               />
             </Field>
             <div className="col-span-2">
-              <Field label="Birim Fiyat">
+              <Field label={t("inventoryPriceField")}>
                 <input
                   type="number"
                   step="0.01"
@@ -328,7 +336,7 @@ export default function InventoryView({
               </Field>
             </div>
             <div>
-              <Field label="Para Birimi">
+              <Field label={t("inventoryCurrencyField")}>
                 <select
                   disabled={userRole === "manager"}
                   className={inputClass}
@@ -342,7 +350,7 @@ export default function InventoryView({
               </Field>
             </div>
           </div>
-          <Field label="Notlar">
+          <Field label={t("notes")}>
             <textarea
               className={inputClass}
               rows={2}
@@ -353,16 +361,16 @@ export default function InventoryView({
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={() => setOpen(false)}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 cursor-pointer"
             >
-              İptal
+              {t("cancel")}
             </button>
             <button
               onClick={save}
               disabled={saving}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60 cursor-pointer"
             >
-              {saving ? "Kaydediliyor..." : "Kaydet"}
+              {saving ? t("savingProduct") : t("save")}
             </button>
           </div>
         </div>

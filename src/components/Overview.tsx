@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { ProcessItem, Store, InventoryItem } from "@/lib/types";
 import { Badge } from "./ui";
 
+import { translations } from "@/lib/translations";
+
 interface WidgetConfig {
   id: string;
   name: string;
@@ -32,6 +34,7 @@ export default function Overview({
   onResolveReset,
   onResetPassword,
   onNavigate,
+  lang = "TR",
 }: {
   stores: Store[];
   processes: ProcessItem[];
@@ -42,10 +45,28 @@ export default function Overview({
   onResolveReset?: (id: number) => void;
   onResetPassword?: (id: number, password: string) => Promise<{ success: boolean; error?: string }>;
   onNavigate: (tab: string) => void;
+  lang?: "TR" | "EN";
 }) {
   const [widgets, setWidgets] = useState<WidgetConfig[]>(DEFAULT_WIDGETS);
   const [mounted, setMounted] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  const t = (key: string): string => {
+    return (translations as any)[lang]?.[key] || key;
+  };
+
+  const getWidgetName = (id: string): string => {
+    const names: Record<string, string> = {
+      stats: lang === "TR" ? "Özet İstatistik Kartları" : "Summary Statistics Cards",
+      critical_stock: lang === "TR" ? "Kritik Stok Uyarısı" : "Critical Stock Alert",
+      process_distribution: lang === "TR" ? "Süreç Dağılım Grafiği" : "Process Distribution Chart",
+      recent_processes: lang === "TR" ? "Son Süreçler Listesi" : "Recent Processes List",
+      quick_actions: lang === "TR" ? "Hızlı Menü Kartı" : "Quick Action Menu Card",
+      reset_requests: lang === "TR" ? "Şifre Sıfırlama Talepleri (Admin)" : "Password Reset Requests (Admin)",
+      activity_logs: lang === "TR" ? "Sistem Aktivite Günlüğü (Admin)" : "System Activity Log (Admin)",
+    };
+    return names[id] || id;
+  };
 
   // Activity Log Filters
   const [logActionFilter, setLogActionFilter] = useState("");
@@ -145,33 +166,35 @@ export default function Overview({
 
   const statsItems = [
     {
-      label: "Toplam Mağaza",
+      label: t("totalStores"),
       value: stores.length,
-      sub: `${activeStores} aktif mağaza`,
+      sub: t("activeStoresDetail").replace("{count}", String(activeStores)),
       icon: "🏬",
       color: "from-indigo-500 to-blue-600 shadow-indigo-500/20",
       tab: "stores",
     },
     {
-      label: "Aktif Süreçler",
+      label: t("activeProcesses"),
       value: pendingCount + inProgressCount,
-      sub: `${inProgressCount} devam eden, ${pendingCount} bekleyen`,
+      sub: t("processesDetail")
+        .replace("{inProgress}", String(inProgressCount))
+        .replace("{pending}", String(pendingCount)),
       icon: "🔄",
       color: "from-amber-500 to-orange-600 shadow-amber-500/20",
       tab: "processes",
     },
     {
-      label: "Toplam Ürün Çeşidi",
+      label: t("totalProductTypes"),
       value: totalProducts,
-      sub: `${totalStockQty.toLocaleString("tr-TR")} adet toplam stok`,
+      sub: t("totalStockDetail").replace("{count}", totalStockQty.toLocaleString(lang === "TR" ? "tr-TR" : "en-US")),
       icon: "📦",
       color: "from-emerald-500 to-teal-600 shadow-emerald-500/20",
       tab: "inventory",
     },
     {
-      label: "Kritik Stok Uyarısı",
+      label: t("criticalStockAlert"),
       value: criticalItems.length,
-      sub: criticalItems.length > 0 ? "Yetersiz stok seviyesi!" : "Tüm stoklar güvende",
+      sub: criticalItems.length > 0 ? t("insufficientStock") : t("allStocksSafe"),
       icon: "⚠️",
       color: criticalItems.length > 0 
         ? "from-rose-500 to-red-600 shadow-rose-500/20 animate-pulse" 
@@ -186,7 +209,7 @@ export default function Overview({
       <div className="grid place-items-center py-24 text-slate-400">
         <div className="text-center">
           <div className="mb-3 text-3xl">⏳</div>
-          Genel Bakış Yükleniyor...
+          {t("loading")}
         </div>
       </div>
     );
@@ -605,9 +628,9 @@ export default function Overview({
       {/* Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Genel Bakış</h2>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{t("overview")}</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Sistem durumunu takip edin ve panel düzenini özelleştirin
+            {t("overviewCustomLayout")}
           </p>
         </div>
         <button
@@ -618,7 +641,7 @@ export default function Overview({
               : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
           }`}
         >
-          ⚙️ {showSettings ? "Ayarları Kapat" : "Görünümü Özelleştir"}
+          ⚙️ {showSettings ? t("closeSettings") : t("customizeLayout")}
         </button>
       </div>
 
@@ -627,13 +650,13 @@ export default function Overview({
         <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 shadow-inner space-y-4">
           <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
             <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-              🛠️ Panel Bileşen Ayarları
+              🛠️ {t("panelWidgetsSettings")}
             </span>
             <button
               onClick={() => saveLayout(DEFAULT_WIDGETS)}
               className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg transition"
             >
-              Varsayılana Sıfırla
+              {t("resetLayout")}
             </button>
           </div>
           <div className="space-y-2">
@@ -646,7 +669,7 @@ export default function Overview({
                 >
                   <div className="flex items-center gap-2.5 min-w-[200px]">
                     <span className="text-lg">{w.icon}</span>
-                    <span className="text-xs font-semibold text-slate-800">{w.name}</span>
+                    <span className="text-xs font-semibold text-slate-800">{getWidgetName(w.id)}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     {/* Visibility Toggle */}
@@ -657,7 +680,7 @@ export default function Overview({
                         onChange={() => toggleVisibility(w.id)}
                         className="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
                       />
-                      <span className="text-[11px] text-slate-600 font-medium">Göster</span>
+                      <span className="text-[11px] text-slate-600 font-medium">{t("showWidget")}</span>
                     </label>
 
                     {/* Size Selector */}
@@ -667,9 +690,9 @@ export default function Overview({
                       onChange={(e) => changeSize(w.id, e.target.value as any)}
                       className="rounded border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 focus:border-indigo-500 disabled:opacity-50"
                     >
-                      <option value="1/3">Küçük (1/3)</option>
-                      <option value="2/3">Orta (2/3)</option>
-                      <option value="full">Tam Genişlik (3/3)</option>
+                      <option value="1/3">{lang === "TR" ? "Küçük (1/3)" : "Small (1/3)"}</option>
+                      <option value="2/3">{lang === "TR" ? "Orta (2/3)" : "Medium (2/3)"}</option>
+                      <option value="full">{lang === "TR" ? "Tam Genişlik (3/3)" : "Full Width (3/3)"}</option>
                     </select>
 
                     {/* Move Up/Down */}
@@ -678,7 +701,7 @@ export default function Overview({
                         onClick={() => moveUp(w.id)}
                         disabled={mainIndex === 0}
                         className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
-                        title="Yukarı Taşı"
+                        title={t("moveUp")}
                       >
                         ▲
                       </button>
@@ -686,7 +709,7 @@ export default function Overview({
                         onClick={() => moveDown(w.id)}
                         disabled={mainIndex === widgets.length - 1}
                         className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
-                        title="Aşağı Taşı"
+                        title={t("moveDown")}
                       >
                         ▼
                       </button>
@@ -703,15 +726,15 @@ export default function Overview({
       {visibleWidgets.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-50/50 rounded-3xl border border-dashed border-slate-300 p-8">
           <span className="text-4xl">🎛️</span>
-          <p className="text-sm font-bold text-slate-800 mt-4">Kişisel Paneline Hoş Geldiniz</p>
+          <p className="text-sm font-bold text-slate-800 mt-4">{lang === "TR" ? "Kişisel Paneline Hoş Geldiniz" : "Welcome to Your Personal Dashboard"}</p>
           <p className="text-xs text-slate-500 max-w-sm mt-1.5 leading-relaxed">
-            Paneli boş bıraktınız. Görmek istediğiniz özet kartlarını, tabloları ve grafikleri seçmek için sağ üstteki <strong>Görünümü Özelleştir</strong> butonuna tıklayarak bileşenleri ekleyebilirsiniz.
+            {t("emptyDashboard")}
           </p>
           <button
             onClick={() => setShowSettings(true)}
             className="mt-5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-700 transition cursor-pointer"
           >
-            + Bileşen Ekle / Ayarla
+            + {t("emptyDashboardAdd")}
           </button>
         </div>
       ) : (

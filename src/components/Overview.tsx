@@ -262,32 +262,32 @@ export default function Overview({
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                    <span>🚨</span> Kritik Stok Seviyeleri
+                    <span>🚨</span> {t("criticalStockTitle")}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Minimum limit altındaki ürünler</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{t("criticalStockDesc")}</p>
                 </div>
                 <button
                   onClick={() => onNavigate("inventory")}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/70 px-3 py-1.5 rounded-lg transition"
+                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/70 px-3 py-1.5 rounded-lg transition cursor-pointer"
                 >
-                  Tümü →
+                  {t("criticalStockAll")}
                 </button>
               </div>
 
               {criticalItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center bg-emerald-50/30 rounded-xl border border-emerald-100/50">
                   <span className="text-3xl">🛡️</span>
-                  <p className="text-sm font-semibold text-emerald-800 mt-2">Tüm Stoklar Güvende</p>
-                  <p className="text-xs text-emerald-600/80 mt-0.5">Kritik stok seviyesinde ürün bulunmuyor.</p>
+                  <p className="text-sm font-semibold text-emerald-800 mt-2">{t("allStocksSafe")}</p>
+                  <p className="text-xs text-emerald-600/80 mt-0.5">{t("criticalStockSafeText")}</p>
                 </div>
               ) : (
                 <div className="overflow-hidden rounded-xl border border-slate-100">
                   <table className="w-full text-sm text-left">
                     <thead className="bg-slate-50 text-slate-500 text-xs font-semibold uppercase">
                       <tr>
-                        <th className="px-4 py-2.5">Ürün</th>
-                        <th className="px-4 py-2.5">Mağaza</th>
-                        <th className="px-4 py-2.5 text-center">Stok</th>
+                        <th className="px-4 py-2.5">{t("criticalStockHeaderProduct")}</th>
+                        <th className="px-4 py-2.5">{t("criticalStockHeaderStore")}</th>
+                        <th className="px-4 py-2.5 text-center">{t("criticalStockHeaderStock")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -314,9 +314,9 @@ export default function Overview({
               <div className="mt-3 text-center">
                 <button
                   onClick={() => onNavigate("inventory")}
-                  className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
                 >
-                  +{criticalItems.length - 5} kritik ürün daha var
+                  {lang === "TR" ? `+${criticalItems.length - 5} kritik ürün daha var` : `+${criticalItems.length - 5} more critical products`}
                 </button>
               </div>
             )}
@@ -330,20 +330,20 @@ export default function Overview({
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                    <span>📅</span> Son Operasyonlar
+                    <span>📅</span> {t("recentOperationsTitle")}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">En son güncellenen süreçler</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{t("recentOperationsDesc")}</p>
                 </div>
                 <button
                   onClick={() => onNavigate("processes")}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100/70 px-3 py-1.5 rounded-lg transition"
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100/70 px-3 py-1.5 rounded-lg transition cursor-pointer"
                 >
-                  Tümü →
+                  {t("criticalStockAll")}
                 </button>
               </div>
 
               {processes.length === 0 ? (
-                <p className="py-8 text-center text-sm text-slate-400">Henüz süreç kaydı yok.</p>
+                <p className="py-8 text-center text-sm text-slate-400">{t("noProcessRecord")}</p>
               ) : (
                 <div className="divide-y divide-slate-100">
                   {processes.slice(0, 5).map((p) => (
@@ -354,7 +354,7 @@ export default function Overview({
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-slate-800 truncate">{p.title}</p>
                         <p className="text-xs text-slate-400 mt-0.5 truncate">
-                          {p.storeName} • {p.category || "Kategorisiz"}
+                          {p.storeName} • {p.category || (lang === "TR" ? "Kategorisiz" : "Uncategorized")}
                         </p>
                       </div>
                       <Badge
@@ -414,14 +414,14 @@ export default function Overview({
         return (
           <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 p-6 shadow-xl premium-glow text-white h-full flex flex-col justify-between hover-lift">
             <div>
-              <h3 className="font-bold text-base mb-1">Hızlı Erişim</h3>
-              <p className="text-xs text-slate-400 mb-4">İstediğiniz ekrana tek tıkla geçiş yapın</p>
+              <h3 className="font-bold text-base mb-1">{t("quickAccessTitle")}</h3>
+              <p className="text-xs text-slate-400 mb-4">{t("quickAccessDesc")}</p>
               
               <div className="space-y-2">
                 {[
-                  { label: "Mağazalar", tab: "stores", icon: "🏬" },
-                  { label: "Görev / Süreçler", tab: "processes", icon: "🗂️" },
-                  { label: "Envanter Paneli", tab: "inventory", icon: "📦" },
+                  { label: lang === "TR" ? "Mağazalar" : "Stores", tab: "stores", icon: "🏬" },
+                  { label: lang === "TR" ? "Görev / Süreçler" : "Tasks / Processes", tab: "processes", icon: "🗂️" },
+                  { label: lang === "TR" ? "Envanter Paneli" : "Inventory Dashboard", tab: "inventory", icon: "📦" },
                 ].map((act) => (
                   <button
                     key={act.label}
@@ -447,20 +447,20 @@ export default function Overview({
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                    <span>🔑</span> Şifre Sıfırlama Talepleri
+                    <span>🔑</span> {t("resetRequestsTitle")}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Sıfırlama bekleyen kullanıcı hesapları</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{t("resetRequestsDesc")}</p>
                 </div>
-                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
-                  {resetRequests.length} Yeni
+                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 dark:bg-slate-900 dark:border-slate-800">
+                  {lang === "TR" ? `${resetRequests.length} Yeni` : `${resetRequests.length} New`}
                 </span>
               </div>
 
               {resetRequests.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                   <span className="text-2xl">🎉</span>
-                  <p className="text-xs font-semibold text-slate-700 mt-2">Bekleyen Talep Yok</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Aktif şifre sıfırlama talebi bulunmuyor.</p>
+                  <p className="text-xs font-semibold text-slate-700 mt-2">{t("noResetRequests")}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{t("noResetRequestsDesc")}</p>
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 max-h-[220px] overflow-y-auto pr-1">
@@ -481,14 +481,14 @@ export default function Overview({
                           @{req.username}
                         </button>
                         <p className="text-[10px] text-slate-400 mt-0.5">
-                          Tarih: {new Date(req.createdAt).toLocaleString("tr-TR")}
+                          {lang === "TR" ? "Tarih: " : "Date: "} {new Date(req.createdAt).toLocaleString(lang === "TR" ? "tr-TR" : "en-US")}
                         </p>
                       </div>
                       <button
                         onClick={() => onResolveReset && onResolveReset(req.id)}
                         className="rounded-lg bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white transition cursor-pointer shrink-0"
                       >
-                        Tamamlandı İşaretle
+                        {t("resolveRequest")}
                       </button>
                     </div>
                   ))}
@@ -526,25 +526,25 @@ export default function Overview({
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                    <span>📜</span> Sistem Aktivite Günlüğü
+                    <span>📜</span> {t("activityLogsTitle")}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Sistemde yapılan son işlemler</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{t("activityLogsDesc")}</p>
                 </div>
-                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
-                  {filteredLogs.length} Filtrelendi / Son {activityLogs.length} İşlem
+                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 dark:bg-slate-900 dark:border-slate-800">
+                  {t("filteredCount").replace("{count}", String(filteredLogs.length)).replace("{total}", String(activityLogs.length))}
                 </span>
               </div>
 
               {/* Filters UI */}
-              <div className="mb-4 grid gap-3 grid-cols-1 sm:grid-cols-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-100/50">
+              <div className="mb-4 grid gap-3 grid-cols-1 sm:grid-cols-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-100/50 dark:bg-slate-900/50 dark:border-slate-800/50">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Yapılan İşlem</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t("filterAction")}</label>
                   <select
                     value={logActionFilter}
                     onChange={(e) => setLogActionFilter(e.target.value)}
                     className="block w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                   >
-                    <option value="">Tüm İşlemler</option>
+                    <option value="">{t("allActions")}</option>
                     {uniqueActions.map((act) => (
                       <option key={act} value={act}>
                         {act}
@@ -553,7 +553,7 @@ export default function Overview({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Başlangıç</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t("filterStartDate")}</label>
                   <input
                     type="date"
                     value={logStartDate}
@@ -562,7 +562,7 @@ export default function Overview({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Bitiş</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">{t("filterEndDate")}</label>
                   <input
                     type="date"
                     value={logEndDate}
@@ -575,14 +575,14 @@ export default function Overview({
               {activityLogs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                   <span className="text-2xl">🔍</span>
-                  <p className="text-xs font-semibold text-slate-700 mt-2">Kayıt Bulunmamaktadır</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Henüz sistemde kaydedilmiş bir işlem yok.</p>
+                  <p className="text-xs font-semibold text-slate-700 mt-2">{t("noActivityLogs")}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{t("noActivityLogsDesc")}</p>
                 </div>
               ) : filteredLogs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                   <span className="text-2xl">🔍</span>
-                  <p className="text-xs font-semibold text-slate-700 mt-2">Sonuç Bulunamadı</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Filtre kriterlerine uygun işlem bulunamadı.</p>
+                  <p className="text-xs font-semibold text-slate-700 mt-2">{t("noFilteredLogs")}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{t("noFilteredLogsDesc")}</p>
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 max-h-[300px] overflow-y-auto pr-1">
@@ -608,7 +608,7 @@ export default function Overview({
                           {log.details}
                         </p>
                         <p className="text-[10px] text-slate-400 mt-1">
-                          Zaman: {new Date(log.createdAt).toLocaleString("tr-TR")}
+                          {lang === "TR" ? "Zaman: " : "Time: "} {new Date(log.createdAt).toLocaleString(lang === "TR" ? "tr-TR" : "en-US")}
                         </p>
                       </div>
                     </div>
@@ -759,10 +759,12 @@ export default function Overview({
       {/* Password Reset Modal for Admin */}
       {resetTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl text-left">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Şifre Sıfırla</h3>
-            <p className="text-xs text-slate-500 mb-4">
-              <strong>@{resetTarget.username}</strong> kullanıcısı için yeni bir şifre girin. Şifre güncellendikten sonra talep kapatılacaktır.
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/95 p-6 shadow-2xl text-left">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t("resetPasswordModalTitle")}</h3>
+            <p className="text-xs text-slate-550 dark:text-slate-400 mb-4">
+              {lang === "TR"
+                ? `@{${resetTarget.username}} kullanıcısı için yeni bir şifre girin. Şifre güncellendikten sonra talep kapatılacaktır.`
+                : `Enter a new password for @{${resetTarget.username}}. The request will be resolved after submission.`}
             </p>
 
             {resetError && (
@@ -774,7 +776,7 @@ export default function Overview({
             <form onSubmit={handleResetSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Yeni Şifre
+                  {t("newPassword")}
                 </label>
                 <input
                   type="password"
@@ -782,25 +784,25 @@ export default function Overview({
                   disabled={resetLoading}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
-                  placeholder="Yeni şifreyi girin..."
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 dark:bg-slate-950 dark:border-slate-800 dark:text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
+                  placeholder={lang === "TR" ? "Yeni şifreyi girin..." : "Enter new password..."}
                 />
               </div>
 
-              <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
+              <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setResetTarget(null)}
-                  className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+                  className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
-                  İptal
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={resetLoading}
                   className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-500 transition disabled:opacity-50 cursor-pointer"
                 >
-                  {resetLoading ? "Kaydediliyor..." : "Şifreyi Güncelle ve Talebi Kapat"}
+                  {resetLoading ? t("updating") : (lang === "TR" ? "Şifreyi Güncelle ve Talebi Kapat" : "Update Password & Close Request")}
                 </button>
               </div>
             </form>

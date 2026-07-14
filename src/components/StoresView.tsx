@@ -68,7 +68,7 @@ export default function StoresView({
 
   async function save() {
     if (!form.name.trim()) {
-      setError("Mağaza adı zorunludur.");
+      setError(lang === "TR" ? "Mağaza adı zorunludur." : "Store name is required.");
       return;
     }
     setSaving(true);
@@ -84,19 +84,19 @@ export default function StoresView({
       );
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error(d.error || "Kayıt başarısız.");
+        throw new Error(d.error || (lang === "TR" ? "Kayıt başarısız." : "Save failed."));
       }
       setOpen(false);
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Bir hata oluştu.");
+      setError(e instanceof Error ? e.message : (lang === "TR" ? "Bir hata oluştu." : "An error occurred."));
     } finally {
       setSaving(false);
     }
   }
 
   async function remove(id: number) {
-    if (!confirm("Bu mağazayı ve ilişkili tüm envanter/süreç kayıtlarını silmek istediğinize emin misiniz?")) return;
+    if (!confirm(t("storeDeleteConfirm"))) return;
     await fetch(`/api/stores/${id}`, { method: "DELETE" });
     reload();
   }

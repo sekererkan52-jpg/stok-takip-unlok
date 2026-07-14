@@ -364,9 +364,10 @@ export default function Overview({
                           p.status === "iptal" ? "red" : "gray"
                         }
                       >
-                        {p.status === "tamamlandi" ? "Bitti" :
-                         p.status === "devam" ? "Devam" :
-                         p.status === "iptal" ? "İptal" : "Bekliyor"}
+                        {p.status === "tamamlandi" ? (lang === "TR" ? "Bitti" : "Completed") :
+                         p.status === "devam" ? (lang === "TR" ? "Devam" : "In Progress") :
+                         p.status === "iptal" ? (lang === "TR" ? "İptal" : "Cancelled") : 
+                         (lang === "TR" ? "Bekliyor" : "Pending")}
                       </Badge>
                     </div>
                   ))}
@@ -381,14 +382,14 @@ export default function Overview({
         return (
           <div className="rounded-3xl glass-card p-6 h-full hover-lift">
             <h3 className="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
-              <span>📈</span> Süreç Analizi
+              <span>📈</span> {t("processAnalysisTitle")}
             </h3>
             <div className="space-y-3.5">
               {[
-                { label: "Beklemede", count: pendingCount, color: "bg-slate-400", pct: total ? (pendingCount / total) * 100 : 0 },
-                { label: "Devam Ediyor", count: inProgressCount, color: "bg-blue-500", pct: total ? (inProgressCount / total) * 100 : 0 },
-                { label: "Tamamlandı", count: completedCount, color: "bg-emerald-500", pct: total ? (completedCount / total) * 100 : 0 },
-                { label: "İptal", count: cancelledCount, color: "bg-rose-500", pct: total ? (cancelledCount / total) * 100 : 0 },
+                { label: t("processStatusPending"), count: pendingCount, color: "bg-slate-400", pct: total ? (pendingCount / total) * 100 : 0 },
+                { label: t("processStatusInProgress"), count: inProgressCount, color: "bg-blue-500", pct: total ? (inProgressCount / total) * 100 : 0 },
+                { label: t("processStatusCompleted"), count: completedCount, color: "bg-emerald-500", pct: total ? (completedCount / total) * 100 : 0 },
+                { label: t("processStatusCancelled"), count: cancelledCount, color: "bg-rose-500", pct: total ? (cancelledCount / total) * 100 : 0 },
               ].map((item) => (
                 <div key={item.label} className="space-y-1">
                   <div className="flex items-center justify-between text-xs font-semibold">
@@ -399,7 +400,7 @@ export default function Overview({
                   </div>
                   <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${item.color}`}
+                       className={`h-full rounded-full transition-all duration-500 ${item.color}`}
                       style={{ width: `${item.pct}%` }}
                     />
                   </div>

@@ -142,7 +142,12 @@ export function EmptyState({
   desc: string;
 }) {
   const renderIllustration = () => {
-    if (title === "Sonuç bulunamadı") {
+    const isNoResult = 
+      title === "Sonuç bulunamadı" || 
+      title === "No results found" || 
+      title === "No result" || 
+      title === "Sonuç Bulunamadı";
+    if (isNoResult) {
       return <SearchIllustration />;
     }
     

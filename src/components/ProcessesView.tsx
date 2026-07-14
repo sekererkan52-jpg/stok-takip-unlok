@@ -15,24 +15,13 @@ const emptyForm = {
   dueDate: "",
 };
 
-const statusLabels: Record<string, string> = {
-  beklemede: "Beklemede",
-  devam: "Devam Ediyor",
-  tamamlandi: "Tamamlandı",
-  iptal: "İptal",
-};
+import { translations } from "@/lib/translations";
 
 const statusColors: Record<string, "gray" | "blue" | "green" | "red"> = {
   beklemede: "gray",
   devam: "blue",
   tamamlandi: "green",
   iptal: "red",
-};
-
-const priorityLabels: Record<string, string> = {
-  dusuk: "Düşük",
-  orta: "Orta",
-  yuksek: "Yüksek",
 };
 
 const priorityColors: Record<string, "gray" | "amber" | "red"> = {
@@ -46,11 +35,13 @@ export default function ProcessesView({
   stores,
   reload,
   userRole,
+  lang = "TR",
 }: {
   items: ProcessItem[];
   stores: Store[];
   reload: () => void;
   userRole?: string;
+  lang?: "TR" | "EN";
 }) {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -58,6 +49,23 @@ export default function ProcessesView({
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [statusFilter, setStatusFilter] = useState("");
+
+  const t = (key: string): string => {
+    return translations[lang]?.[key] || key;
+  };
+
+  const statusLabels: Record<string, string> = {
+    beklemede: lang === "TR" ? "Beklemede" : "Pending",
+    devam: lang === "TR" ? "Devam Ediyor" : "In Progress",
+    tamamlandi: lang === "TR" ? "Tamamlandı" : "Completed",
+    iptal: lang === "TR" ? "İptal" : "Cancelled",
+  };
+
+  const priorityLabels: Record<string, string> = {
+    dusuk: lang === "TR" ? "Düşük" : "Low",
+    orta: lang === "TR" ? "Orta" : "Medium",
+    yuksek: lang === "TR" ? "Yüksek" : "High",
+  };
 
   function openNew() {
     setForm({ ...emptyForm, storeId: stores[0]?.id ? String(stores[0].id) : "" });
@@ -84,11 +92,11 @@ export default function ProcessesView({
 
   async function save() {
     if (!form.storeId) {
-      setError("Mağaza seçimi zorunludur.");
+      setError(lang === "TR" ? "Mağaza seçimi zorunludur." : "Store selection is required.");
       return;
     }
     if (!form.title.trim()) {
-      setError("Süreç başlığı zorunludur.");
+      setError(lang === "TR" ? "Süreç başlığı zorunludur." : "Process title is required.");
       return;
     }
     setSaving(true);
@@ -104,19 +112,19 @@ export default function ProcessesView({
       );
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error(d.error || "Kayıt başarısız.");
+        throw new Error(d.error || (lang === "TR" ? "Kayıt başarısız." : "Save failed."));
       }
       setOpen(false);
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Bir hata oluştu.");
+      setError(e instanceof Error ? e.message : (lang === "TR" ? "Bir hata oluştu." : "An error occurred."));
     } finally {
       setSaving(false);
     }
   }
 
   async function remove(id: number) {
-    if (!confirm("Bu süreci silmek istediğinize emin misiniz?")) return;
+    if (!confirm(t("processDeleteConfirm"))) return;
     await fetch(`/api/processes/${id}`, { method: "DELETE" });
     reload();
   }
@@ -129,23 +137,23 @@ export default function ProcessesView({
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Süreçler</h2>
-          <p className="text-sm text-slate-500">Mağaza görev ve süreçlerini takip edin</p>
+          <h2 className="text-2xl font-bold text-slate-900">{t("processesTitle")}</h2>
+          <p className="text-sm text-slate-500">{t("processesDesc")}</p>
         </div>
         {userRole === "admin" && (
           <button
             onClick={openNew}
             disabled={stores.length === 0}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >
-            + Yeni Süreç
+            {t("newProcess")}
           </button>
         )}
       </div>
 
       {stores.length === 0 && (
         <div className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Süreç eklemeden önce en az bir mağaza oluşturmalısınız.
+          {t("noStoresProcessWarning")}
         </div>
       )}
 
@@ -154,13 +162,13 @@ export default function ProcessesView({
           <button
             key={st || "all"}
             onClick={() => setStatusFilter(st)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition cursor-pointer ${
               statusFilter === st
                 ? "bg-indigo-600 text-white"
                 : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
             }`}
           >
-            {st === "" ? "Tümü" : statusLabels[st]}
+            {st === "" ? t("allFilter") : statusLabels[st]}
           </button>
         ))}
       </div>
@@ -168,11 +176,11 @@ export default function ProcessesView({
       {filtered.length === 0 ? (
         <EmptyState
           icon="🗂️"
-          title={items.length === 0 ? "Henüz süreç yok" : "Sonuç bulunamadı"}
+          title={items.length === 0 ? t("noProcessesText") : t("noResult")}
           desc={
             items.length === 0
-              ? "İlk sürecinizi eklemek için 'Yeni Süreç' butonuna tıklayın."
-              : "Bu filtreye uygun süreç bulunamadı."
+              ? t("noProcessesDesc")
+              : t("noResultProcessDesc")
           }
         />
       ) : (
@@ -198,7 +206,7 @@ export default function ProcessesView({
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                 <span>🏬 {p.storeName || "-"}</span>
                 <Badge color={priorityColors[p.priority] || "gray"}>
-                  Öncelik: {priorityLabels[p.priority] || p.priority}
+                  {t("priority")}: {priorityLabels[p.priority] || p.priority}
                 </Badge>
                 {p.category && <span>🏷️ {p.category}</span>}
                 {p.assignedTo && <span>👤 {p.assignedTo}</span>}
@@ -212,15 +220,15 @@ export default function ProcessesView({
                 <div className="mt-4 flex gap-2 border-t border-slate-100 pt-3">
                   <button
                     onClick={() => openEdit(p)}
-                    className="flex-1 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                    className="flex-1 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 cursor-pointer"
                   >
-                    Düzenle
+                    {t("edit")}
                   </button>
                   <button
                     onClick={() => remove(p.id)}
-                    className="rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-100"
+                    className="rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-600 transition hover:bg-rose-100 cursor-pointer"
                   >
-                    Sil
+                    {t("delete")}
                   </button>
                 </div>
               )}
@@ -231,7 +239,7 @@ export default function ProcessesView({
 
       <Modal
         open={open}
-        title={editId ? "Süreç Düzenle" : "Yeni Süreç"}
+        title={editId ? t("editProcessTitle") : t("newProcessTitle")}
         onClose={() => setOpen(false)}
       >
         <div className="space-y-4">
@@ -240,13 +248,13 @@ export default function ProcessesView({
               {error}
             </div>
           )}
-          <Field label="Mağaza" required>
+          <Field label={t("storeName")} required>
             <select
               className={inputClass}
               value={form.storeId}
               onChange={(e) => setForm({ ...form, storeId: e.target.value })}
             >
-              <option value="">Mağaza seçin</option>
+              <option value="">{t("storeSelectPlaceholder")}</option>
               {stores.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -254,14 +262,14 @@ export default function ProcessesView({
               ))}
             </select>
           </Field>
-          <Field label="Başlık" required>
+          <Field label={t("processTitleField")} required>
             <input
               className={inputClass}
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
             />
           </Field>
-          <Field label="Açıklama">
+          <Field label={t("processDescField")}>
             <textarea
               className={inputClass}
               rows={2}
@@ -272,15 +280,15 @@ export default function ProcessesView({
             />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Kategori">
+            <Field label={t("processCategoryField")}>
               <input
                 className={inputClass}
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                placeholder="Sevkiyat, temizlik..."
+                placeholder={lang === "TR" ? "Sevkiyat, temizlik..." : "Shipping, cleaning..."}
               />
             </Field>
-            <Field label="Sorumlu">
+            <Field label={t("processAssignedToField")}>
               <input
                 className={inputClass}
                 value={form.assignedTo}
@@ -289,30 +297,30 @@ export default function ProcessesView({
                 }
               />
             </Field>
-            <Field label="Durum">
+            <Field label={t("processStatusField")}>
               <select
                 className={inputClass}
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
               >
-                <option value="beklemede">Beklemede</option>
-                <option value="devam">Devam Ediyor</option>
-                <option value="tamamlandi">Tamamlandı</option>
-                <option value="iptal">İptal</option>
+                <option value="beklemede">{statusLabels.beklemede}</option>
+                <option value="devam">{statusLabels.devam}</option>
+                <option value="tamamlandi">{statusLabels.tamamlandi}</option>
+                <option value="iptal">{statusLabels.iptal}</option>
               </select>
             </Field>
-            <Field label="Öncelik">
+            <Field label={t("processPriorityField")}>
               <select
                 className={inputClass}
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value })}
               >
-                <option value="dusuk">Düşük</option>
-                <option value="orta">Orta</option>
-                <option value="yuksek">Yüksek</option>
+                <option value="dusuk">{priorityLabels.dusuk}</option>
+                <option value="orta">{priorityLabels.orta}</option>
+                <option value="yuksek">{priorityLabels.yuksek}</option>
               </select>
             </Field>
-            <Field label="Termin Tarihi">
+            <Field label={t("processDueDateField")}>
               <input
                 type="date"
                 className={inputClass}
@@ -324,16 +332,16 @@ export default function ProcessesView({
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={() => setOpen(false)}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 cursor-pointer"
             >
-              İptal
+              {t("cancel")}
             </button>
             <button
               onClick={save}
               disabled={saving}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60 cursor-pointer"
             >
-              {saving ? "Kaydediliyor..." : "Kaydet"}
+              {saving ? t("savingProcess") : t("save")}
             </button>
           </div>
         </div>

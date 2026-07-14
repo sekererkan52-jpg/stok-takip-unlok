@@ -1,12 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { translations } from "@/lib/translations";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Preferred language state
+  const [lang, setLang] = useState<"TR" | "EN">("TR");
+  useEffect(() => {
+    const saved = localStorage.getItem("preferred_lang") as "TR" | "EN";
+    if (saved) setLang(saved);
+  }, []);
+
+  const changeLanguage = (newLang: "TR" | "EN") => {
+    setLang(newLang);
+    localStorage.setItem("preferred_lang", newLang);
+  };
+
+  const t = (key: string): string => {
+    return translations[lang]?.[key] || key;
+  };
 
   // Password reset state
   const [showResetModal, setShowResetModal] = useState(false);
@@ -18,7 +35,7 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
-      setError("Kullanıcı adı ve şifre gereklidir.");
+      setError(lang === "TR" ? "Kullanıcı adı ve şifre gereklidir." : "Username and password are required.");
       return;
     }
 
@@ -42,7 +59,7 @@ export default function LoginPage() {
       if (data.success) {
         window.location.href = "/";
       } else {
-        setError(data.error || "Kullanıcı adı veya şifre hatalı.");
+        setError(data.error || (lang === "TR" ? "Kullanıcı adı veya şifre hatalı." : "Incorrect username or password."));
       }
     } catch {
       setError("Bağlantı hatası. Lütfen tekrar deneyin.");
@@ -97,20 +114,32 @@ export default function LoginPage() {
             🏪
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-white mb-4 uppercase">
-            Stok & Süreç Yönetimi
+            {t("loginHeroTitle")}
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed mb-6 font-medium">
-            Gelişmiş analitik araçlar, anlık envanter takibi ve dinamik mağaza yönetimi ile işinizi kolaylaştırın.
+            {t("loginHeroDesc")}
           </p>
           <div className="flex items-center gap-3">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Tüm Sistemler Aktif</span>
+            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">{t("allSystemsActive")}</span>
           </div>
         </div>
       </div>
 
       {/* Right side - Login Form */}
       <div className="relative flex w-full items-center justify-center px-4 py-12 sm:px-6 lg:w-1/2 lg:px-8 bg-slate-950 overflow-hidden">
+        {/* Floating Language Switcher */}
+        <div className="absolute top-4 right-4 z-20">
+          <select
+            value={lang}
+            onChange={(e) => changeLanguage(e.target.value as "TR" | "EN")}
+            className="rounded-xl border border-slate-800 bg-slate-900/80 shadow-sm px-3 py-2 text-xs font-bold text-slate-350 outline-none transition hover:bg-slate-850 cursor-pointer text-white"
+          >
+            <option value="TR">🇹🇷 TR</option>
+            <option value="EN">🇺🇸 EN</option>
+          </select>
+        </div>
+
         {/* Glow Orbs in Background */}
         <div className="absolute top-1/4 left-1/4 h-80 w-80 rounded-full bg-indigo-600/10 blur-3xl bg-glow-orb select-none pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 h-80 w-80 rounded-full bg-emerald-600/5 blur-3xl bg-glow-orb select-none pointer-events-none" />
@@ -121,10 +150,10 @@ export default function LoginPage() {
               🏪
             </div>
             <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-white uppercase">
-              Stok Takip Paneli
+              {t("loginTitle")}
             </h2>
             <p className="mt-2 text-sm text-slate-450 font-medium">
-              Yönetim sistemine erişmek için giriş yapın
+              {t("loginDesc")}
             </p>
           </div>
 
@@ -142,7 +171,7 @@ export default function LoginPage() {
                   htmlFor="username"
                   className="text-xs font-semibold uppercase tracking-wider text-slate-400"
                 >
-                  Kullanıcı Adı
+                  {t("username")}
                 </label>
                 <input
                   id="username"
@@ -161,7 +190,7 @@ export default function LoginPage() {
                   htmlFor="password"
                   className="text-xs font-semibold uppercase tracking-wider text-slate-400"
                 >
-                  Şifre
+                  {t("password")}
                 </label>
                 <input
                   id="password"
@@ -184,7 +213,7 @@ export default function LoginPage() {
                     }}
                     className="text-xs font-semibold text-slate-400 hover:text-indigo-400 transition cursor-pointer"
                   >
-                    Şifremi Unuttum
+                    {lang === "TR" ? "Şifremi Unuttum" : "Forgot Password?"}
                   </button>
                 </div>
               </div>
@@ -192,7 +221,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative flex w-full justify-center rounded-xl bg-indigo-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all hover:bg-indigo-500 hover:shadow-indigo-500/30 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                className="group relative flex w-full justify-center rounded-xl bg-indigo-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/20 transition-all hover:bg-indigo-500 hover:shadow-indigo-500/30 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
@@ -215,17 +244,17 @@ export default function LoginPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    <span>Giriş Yapılıyor...</span>
+                    <span>{t("loggingIn")}</span>
                   </div>
                 ) : (
-                  "Giriş Yap"
+                  t("loginButton")
                 )}
               </button>
             </form>
           </div>
 
           <div className="text-center text-xs text-slate-500 lg:text-left">
-            Lokal Mağaza & Envanter Yönetim Paneli
+            {lang === "TR" ? "Lokal Mağaza & Envanter Yönetim Paneli" : "Local Store & Inventory Management Dashboard"}
           </div>
         </div>
       </div>
@@ -234,9 +263,11 @@ export default function LoginPage() {
       {showResetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl text-left">
-            <h3 className="text-lg font-bold text-white mb-2">Şifremi Unuttum</h3>
+            <h3 className="text-lg font-bold text-white mb-2">{lang === "TR" ? "Şifremi Unuttum" : "Forgot Password"}</h3>
             <p className="text-xs text-slate-400 mb-4">
-              Kullanıcı adınızı yazarak şifre sıfırlama talebi gönderin. Talep yönetici paneline iletilecektir.
+              {lang === "TR" 
+                ? "Kullanıcı adınızı yazarak şifre sıfırlama talebi gönderin. Talep yönetici paneline iletilecektir."
+                : "Enter your username to submit a password reset request. It will be sent to the admin panel."}
             </p>
 
             {resetError && (
@@ -253,7 +284,7 @@ export default function LoginPage() {
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Kullanıcı Adı
+                  {t("username")}
                 </label>
                 <input
                   type="text"
@@ -262,7 +293,7 @@ export default function LoginPage() {
                   value={resetUsername}
                   onChange={(e) => setResetUsername(e.target.value)}
                   className="block w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
-                  placeholder="Kullanıcı adınız..."
+                  placeholder={lang === "TR" ? "Kullanıcı adınız..." : "Your username..."}
                 />
               </div>
 
@@ -272,14 +303,16 @@ export default function LoginPage() {
                   onClick={() => setShowResetModal(false)}
                   className="rounded-lg border border-slate-800 px-4 py-2 text-xs font-semibold text-slate-400 hover:bg-slate-800 transition cursor-pointer"
                 >
-                  Kapat
+                  {lang === "TR" ? "Kapat" : "Close"}
                 </button>
                 <button
                   type="submit"
                   disabled={resetLoading}
                   className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-500 transition disabled:opacity-50 cursor-pointer"
                 >
-                  {resetLoading ? "Gönderiliyor..." : "Talep Gönder"}
+                  {resetLoading 
+                    ? (lang === "TR" ? "Gönderiliyor..." : "Sending...") 
+                    : (lang === "TR" ? "Talep Gönder" : "Send Request")}
                 </button>
               </div>
             </form>

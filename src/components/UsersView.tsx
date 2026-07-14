@@ -3,30 +3,7 @@
 import { useEffect, useState } from "react";
 import { Store, User } from "@/lib/types";
 import { Modal, Field, inputClass, Badge, EmptyState } from "./ui";
-
-const ROLES = [
-  {
-    value: "admin",
-    label: "Yönetici (Admin)",
-    desc: "Tüm verilere tam erişim. Kullanıcı yönetimi dahil.",
-    color: "purple" as const,
-    icon: "👑",
-  },
-  {
-    value: "manager",
-    label: "Mağaza Yöneticisi",
-    desc: "Atandığı mağazanın tüm verilerini görür ve düzenleyebilir.",
-    color: "blue" as const,
-    icon: "🏬",
-  },
-  {
-    value: "staff",
-    label: "Personel",
-    desc: "Atandığı mağazada yalnızca süreçleri görüntüleyebilir.",
-    color: "green" as const,
-    icon: "👤",
-  },
-];
+import { translations } from "@/lib/translations";
 
 const emptyForm = {
   username: "",
@@ -41,10 +18,12 @@ export default function UsersView({
   users,
   currentUser,
   reload,
+  lang = "TR",
 }: {
   users: User[];
   currentUser: { id: number; role: string } | null;
   reload: () => void;
+  lang?: "TR" | "EN";
 }) {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -54,6 +33,34 @@ export default function UsersView({
   const [search, setSearch] = useState("");
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string | null>(null);
   const [stores, setStores] = useState<Store[]>([]);
+
+  const t = (key: string): string => {
+    return translations[lang]?.[key] || key;
+  };
+
+  const ROLES = [
+    {
+      value: "admin",
+      label: lang === "TR" ? "Yönetici (Admin)" : "Administrator (Admin)",
+      desc: lang === "TR" ? "Tüm verilere tam erişim. Kullanıcı yönetimi dahil." : "Full access to all data, including user management.",
+      color: "purple" as const,
+      icon: "👑",
+    },
+    {
+      value: "manager",
+      label: lang === "TR" ? "Mağaza Yöneticisi" : "Store Manager",
+      desc: lang === "TR" ? "Atandığı mağazanın tüm verilerini görür ve düzenleyebilir." : "View and edit all data for the assigned store.",
+      color: "blue" as const,
+      icon: "🏬",
+    },
+    {
+      value: "staff",
+      label: lang === "TR" ? "Personel" : "Staff",
+      desc: lang === "TR" ? "Atandığı mağazada yalnızca süreçleri görüntüleyebilir." : "Only view processes for the assigned store.",
+      color: "green" as const,
+      icon: "👤",
+    },
+  ];
 
   useEffect(() => {
     fetch("/api/stores")
@@ -85,19 +92,19 @@ export default function UsersView({
 
   async function save() {
     if (!editId && !form.username.trim()) {
-      setError("Kullanıcı adı zorunludur.");
+      setError(lang === "TR" ? "Kullanıcı adı zorunludur." : "Username is required.");
       return;
     }
     if (!form.fullName.trim()) {
-      setError("Ad Soyad zorunludur.");
+      setError(lang === "TR" ? "Ad Soyad zorunludur." : "Full name is required.");
       return;
     }
     if (!editId && !form.password.trim()) {
-      setError("Şifre zorunludur.");
+      setError(lang === "TR" ? "Şifre zorunludur." : "Password is required.");
       return;
     }
     if (form.role !== "admin" && !form.storeId) {
-      setError("Admin olmayan kullanıcılara mağaza atanmalıdır.");
+      setError(lang === "TR" ? "Admin olmayan kullanıcılara mağaza atanmalıdır." : "Non-admin users must be assigned to a store.");
       return;
     }
 
@@ -120,13 +127,13 @@ export default function UsersView({
 
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error(d.error || "Kayıt başarısız.");
+        throw new Error(d.error || (lang === "TR" ? "Kayıt başarısız." : "Save failed."));
       }
 
       setOpen(false);
       reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Bir hata oluştu.");
+      setError(e instanceof Error ? e.message : (lang === "TR" ? "Bir hata oluştu." : "An error occurred."));
     } finally {
       setSaving(false);
     }
@@ -134,19 +141,19 @@ export default function UsersView({
 
   async function remove(id: number) {
     if (currentUser && id === currentUser.id) {
-      alert("Kendi hesabınızı silemezsiniz.");
+      alert(lang === "TR" ? "Kendi hesabınızı silemezsiniz." : "You cannot delete your own account.");
       return;
     }
-    if (!confirm("Bu kullanıcıyı silmek istediğinize emin misiniz?")) return;
+    if (!confirm(t("userDeleteConfirm"))) return;
     try {
       const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error(d.error || "Silme işlemi başarısız.");
+        throw new Error(d.error || (lang === "TR" ? "Silme işlemi başarısız." : "Delete failed."));
       }
       reload();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Bir hata oluştu.");
+      alert(e instanceof Error ? e.message : (lang === "TR" ? "Bir hata oluştu." : "An error occurred."));
     }
   }
 
@@ -165,14 +172,14 @@ export default function UsersView({
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Kullanıcı Yönetimi</h2>
-          <p className="text-sm text-slate-500">Sistem kullanıcılarını, rollerini ve mağaza yetkilerini yönetin</p>
+          <h2 className="text-2xl font-bold text-slate-900">{t("usersTitle")}</h2>
+          <p className="text-sm text-slate-500">{t("usersDesc")}</p>
         </div>
         <button
           onClick={openNew}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 cursor-pointer"
         >
-          + Yeni Kullanıcı
+          {t("newUser")}
         </button>
       </div>
 
@@ -209,7 +216,7 @@ export default function UsersView({
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Ad soyad veya kullanıcı adı ara..."
+          placeholder={t("searchUserPlaceholder")}
           className={inputClass + " max-w-md"}
         />
       </div>
@@ -217,11 +224,11 @@ export default function UsersView({
       {filtered.length === 0 ? (
         <EmptyState
           icon="👥"
-          title={users.length === 0 ? "Henüz kullanıcı yok" : "Sonuç bulunamadı"}
+          title={users.length === 0 ? t("noUsersText") : t("noResult")}
           desc={
             users.length === 0
-              ? "İlk kullanıcınızı eklemek için 'Yeni Kullanıcı' butonuna tıklayın."
-              : "Arama kriterlerinize uygun kullanıcı bulunamadı."
+              ? t("noUsersDesc")
+              : t("noResultUserDesc")
           }
         />
       ) : (
@@ -230,13 +237,13 @@ export default function UsersView({
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Ad Soyad</th>
-                  <th className="px-4 py-3 font-semibold">Kullanıcı Adı</th>
-                  <th className="px-4 py-3 font-semibold">Rol / Yetki</th>
-                  <th className="px-4 py-3 font-semibold">Atanan Mağaza</th>
-                  <th className="px-4 py-3 font-semibold">Durum</th>
-                  <th className="px-4 py-3 font-semibold">Son Giriş</th>
-                  <th className="px-4 py-3 text-right font-semibold">İşlem</th>
+                  <th className="px-4 py-3 font-semibold">{t("fullNameField")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("usernameField")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("roleField")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("assignedStoreField")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("statusField")}</th>
+                  <th className="px-4 py-3 font-semibold">{lang === "TR" ? "Son Giriş" : "Last Login"}</th>
+                  <th className="px-4 py-3 text-right font-semibold">{t("actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -250,7 +257,7 @@ export default function UsersView({
                           {u.fullName}
                           {currentUser && u.id === currentUser.id && (
                             <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600">
-                              Siz
+                              {lang === "TR" ? "Siz" : "You"}
                             </span>
                           )}
                         </div>
@@ -265,35 +272,35 @@ export default function UsersView({
                             🏬 {u.storeName}
                           </span>
                         ) : u.role === "admin" ? (
-                          <span className="text-slate-400">Tüm mağazalar</span>
+                          <span className="text-slate-400">{lang === "TR" ? "Tüm mağazalar" : "All stores"}</span>
                         ) : (
-                          <span className="text-rose-500">⚠ Mağaza atanmamış</span>
+                          <span className="text-rose-500">⚠ {t("noAssignedStore")}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         <Badge color={u.active === 1 ? "green" : "gray"}>
-                          {u.active === 1 ? "Aktif" : "Pasif"}
+                          {u.active === 1 ? t("active") : t("passive")}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-slate-500 text-xs">
                         {u.lastLogin
-                          ? new Date(u.lastLogin).toLocaleString("tr-TR")
-                          : "Hiç giriş yapmadı"}
+                          ? new Date(u.lastLogin).toLocaleString(lang === "TR" ? "tr-TR" : "en-US")
+                          : (lang === "TR" ? "Hiç giriş yapmadı" : "Never logged in")}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => openEdit(u)}
-                            className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-200"
+                            className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-200 cursor-pointer"
                           >
-                            Düzenle
+                            {t("edit")}
                           </button>
                           {currentUser && u.id !== currentUser.id && (
                             <button
                               onClick={() => remove(u.id)}
-                              className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100"
+                              className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-100 cursor-pointer"
                             >
-                              Sil
+                              {t("delete")}
                             </button>
                           )}
                         </div>
@@ -309,7 +316,7 @@ export default function UsersView({
 
       <Modal
         open={open}
-        title={editId ? "Kullanıcı Düzenle" : "Yeni Kullanıcı Oluştur"}
+        title={editId ? t("editUserTitle") : t("newUserTitle")}
         onClose={() => setOpen(false)}
       >
         <div className="space-y-4">
@@ -320,7 +327,7 @@ export default function UsersView({
           )}
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Kullanıcı Adı" required={!editId}>
+            <Field label={t("usernameField")} required={!editId}>
               <input
                 className={inputClass}
                 disabled={!!editId}
@@ -329,7 +336,7 @@ export default function UsersView({
               />
             </Field>
 
-            <Field label="Ad Soyad" required>
+            <Field label={t("fullNameField")} required>
               <input
                 className={inputClass}
                 value={form.fullName}
@@ -338,7 +345,7 @@ export default function UsersView({
             </Field>
           </div>
 
-          <Field label={editId ? "Yeni Şifre (Boş bırakılırsa değişmez)" : "Şifre"} required={!editId}>
+          <Field label={editId ? (lang === "TR" ? "Yeni Şifre (Boş bırakılırsa değişmez)" : "New Password (leave blank to keep current)") : t("passwordField")} required={!editId}>
             <input
               type="password"
               className={inputClass}
@@ -347,7 +354,7 @@ export default function UsersView({
             />
           </Field>
 
-          <Field label="Rol / Yetki Grubu">
+          <Field label={t("roleField")}>
             <select
               className={inputClass}
               disabled={!!(currentUser && editId === currentUser.id)}
@@ -366,13 +373,13 @@ export default function UsersView({
           </Field>
 
           {form.role !== "admin" && (
-            <Field label="Atanan Mağaza" required>
+            <Field label={t("assignedStoreField")} required>
               <select
                 className={inputClass}
                 value={form.storeId}
                 onChange={(e) => setForm({ ...form, storeId: e.target.value })}
               >
-                <option value="">-- Mağaza Seçin --</option>
+                <option value="">-- {t("storeSelectPlaceholder")} --</option>
                 {stores.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name} {s.city ? `(${s.city})` : ""}
@@ -383,15 +390,15 @@ export default function UsersView({
           )}
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Hesap Durumu">
+            <Field label={t("statusField")}>
               <select
                 className={inputClass}
                 disabled={!!(currentUser && editId === currentUser.id)}
                 value={form.active}
                 onChange={(e) => setForm({ ...form, active: e.target.value })}
               >
-                <option value="1">Aktif</option>
-                <option value="0">Pasif</option>
+                <option value="1">{t("active")}</option>
+                <option value="0">{t("passive")}</option>
               </select>
             </Field>
           </div>
@@ -399,16 +406,16 @@ export default function UsersView({
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
             <button
               onClick={() => setOpen(false)}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 cursor-pointer"
             >
-              İptal
+              {t("cancel")}
             </button>
             <button
               onClick={save}
               disabled={saving}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60 cursor-pointer"
             >
-              {saving ? "Kaydediliyor..." : "Kaydet"}
+              {saving ? t("savingUser") : t("save")}
             </button>
           </div>
         </div>

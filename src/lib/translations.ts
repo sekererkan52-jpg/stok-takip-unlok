@@ -30,6 +30,11 @@ export const translations: Record<string, Record<string, string>> = {
     updating: "Güncelleniyor...",
     passwordChangedSuccess: "Şifreniz başarıyla güncellendi.",
 
+    // Sidebar & Brand
+    storePanel: "Mağaza Paneli",
+    managementSystem: "Yönetim Sistemi",
+    localManagement: "Lokal Yönetim v2.1",
+
     // Dashboard overview stats
     totalStores: "Toplam Mağaza",
     activeProcesses: "Aktif Süreçler",
@@ -147,7 +152,41 @@ export const translations: Record<string, Record<string, string>> = {
     inventoryProductName: "Ürün Adı",
     inventoryPriceField: "Birim Fiyat",
     inventoryCurrencyField: "Para Birimi",
-    savingProduct: "Kaydediliyor..."
+    savingProduct: "Kaydediliyor...",
+
+    // Processes view
+    processesTitle: "Süreçler",
+    processesDesc: "Mağaza görev ve süreçlerini takip edin",
+    newProcess: "+ Yeni Süreç",
+    noStoresProcessWarning: "Süreç eklemeden önce en az bir mağaza oluşturmalısınız.",
+    noProcessesText: "Henüz süreç yok",
+    noProcessesDesc: "İlk sürecinizi eklemek için 'Yeni Süreç' butonuna tıklayın.",
+    noResultProcessDesc: "Bu filtreye uygun süreç bulunamadı.",
+    processDeleteConfirm: "Bu süreci silmek istediğinize emin misiniz?",
+    editProcessTitle: "Süreç Düzenle",
+    newProcessTitle: "Yeni Süreç",
+    processTitleField: "Süreç Başlığı",
+    processDescField: "Açıklama",
+    processCategoryField: "Kategori",
+    processStatusField: "Durum",
+    processPriorityField: "Öncelik",
+    processAssignedToField: "Sorumlu",
+    processDueDateField: "Termin Tarihi",
+    savingProcess: "Kaydediliyor...",
+    allFilter: "Tümü",
+    priority: "Öncelik",
+    storeSelectPlaceholder: "Mağaza seçin",
+
+    // Login Form
+    loginTitle: "Stok Takip Paneli",
+    loginDesc: "Yönetim sistemine erişmek için giriş yapın",
+    loginHeroTitle: "Stok & Süreç Yönetimi",
+    loginHeroDesc: "Gelişmiş analitik araçlar, anlık envanter takibi ve dinamik mağaza yönetimi ile işinizi kolaylaştırın.",
+    allSystemsActive: "Tüm Sistemler Aktif",
+    username: "Kullanıcı Adı",
+    password: "Şifre",
+    loginButton: "Giriş Yap",
+    loggingIn: "Giriş Yapılıyor..."
   },
   EN: {
     overview: "Overview",
@@ -179,6 +218,11 @@ export const translations: Record<string, Record<string, string>> = {
     confirmNewPassword: "Confirm New Password",
     updating: "Updating...",
     passwordChangedSuccess: "Your password has been successfully updated.",
+
+    // Sidebar & Brand
+    storePanel: "Store Panel",
+    managementSystem: "Management System",
+    localManagement: "Local Management v2.1",
 
     // Dashboard overview stats
     totalStores: "Total Stores",
@@ -297,6 +341,40 @@ export const translations: Record<string, Record<string, string>> = {
     inventoryProductName: "Product Name",
     inventoryPriceField: "Unit Price",
     inventoryCurrencyField: "Currency",
-    savingProduct: "Saving..."
+    savingProduct: "Saving...",
+
+    // Processes view
+    processesTitle: "Processes",
+    processesDesc: "Track store tasks and processes",
+    newProcess: "+ New Process",
+    noStoresProcessWarning: "You must create at least one store before adding a process.",
+    noProcessesText: "No processes yet",
+    noProcessesDesc: "Click the '+ New Process' button to add your first process.",
+    noResultProcessDesc: "No processes match this filter.",
+    processDeleteConfirm: "Are you sure you want to delete this process?",
+    editProcessTitle: "Edit Process",
+    newProcessTitle: "New Process",
+    processTitleField: "Process Title",
+    processDescField: "Description",
+    processCategoryField: "Category",
+    processStatusField: "Status",
+    processPriorityField: "Priority",
+    processAssignedToField: "Assigned To",
+    processDueDateField: "Due Date",
+    savingProcess: "Saving...",
+    allFilter: "All",
+    priority: "Priority",
+    storeSelectPlaceholder: "Select store",
+
+    // Login Form
+    loginTitle: "Inventory Dashboard",
+    loginDesc: "Sign in to access the management system",
+    loginHeroTitle: "Stock & Process Management",
+    loginHeroDesc: "Simplify your business with advanced analytical tools, real-time inventory tracking, and dynamic store management.",
+    allSystemsActive: "All Systems Active",
+    username: "Username",
+    password: "Password",
+    loginButton: "Log In",
+    loggingIn: "Logging In..."
   }
 };

@@ -244,8 +244,8 @@ export default function Dashboard() {
               🏪
             </span>
             <div>
-              <p className="text-sm font-extrabold tracking-wide text-white uppercase">Mağaza Paneli</p>
-              <p className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">Yönetim Sistemi</p>
+              <p className="text-sm font-extrabold tracking-wide text-white uppercase">{t("storePanel")}</p>
+              <p className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">{t("managementSystem")}</p>
             </div>
           </div>
           <nav className="space-y-1.5 p-4 flex-1">
@@ -318,7 +318,7 @@ export default function Dashboard() {
             </button>
           )}
           <div className="mt-4 text-center text-[9px] font-bold text-slate-700 uppercase tracking-widest">
-            Lokal Yönetim v2.1
+            {t("localManagement")}
           </div>
         </div>
       </aside>
@@ -382,7 +382,7 @@ export default function Dashboard() {
             <div className="grid place-items-center py-24 text-slate-400">
               <div className="text-center">
                 <div className="mb-3 text-3xl">⏳</div>
-                Yükleniyor...
+                {t("loading")}
               </div>
             </div>
           ) : (
@@ -421,6 +421,7 @@ export default function Dashboard() {
                   stores={stores}
                   reload={load}
                   userRole={user?.role}
+                  lang={lang}
                 />
               )}
               {tab === "users" && user?.role === "admin" && (
@@ -428,6 +429,7 @@ export default function Dashboard() {
                   users={users}
                   currentUser={user}
                   reload={load}
+                  lang={lang}
                 />
               )}
             </>

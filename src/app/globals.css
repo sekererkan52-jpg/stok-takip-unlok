@@ -232,3 +232,15 @@
 .dark .bg-slate-100:hover {
   background-color: rgba(51, 65, 85, 0.9) !important;
 }
+
+.dark .hover\:bg-slate-50:hover {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+}
+
+.dark .hover\:bg-slate-50\/30:hover {
+  background-color: rgba(15, 23, 42, 0.3) !important;
+}
+
+.dark .hover\:bg-slate-50\/50:hover {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+}

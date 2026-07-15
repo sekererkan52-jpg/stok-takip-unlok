@@ -509,12 +509,17 @@ export default function Overview({
             "Kullanıcı Güncellendi": "User Updated",
             "Kullanıcı Tanımlandı": "User Created",
             "Kullanıcı Silindi": "User Deleted",
+            "Mağaza Eklendi": "Store Added",
             "Mağaza Tanımlandı": "Store Created",
             "Mağaza Güncellendi": "Store Updated",
             "Mağaza Silindi": "Store Deleted",
             "Envanter Tanımlandı": "Inventory Item Created",
             "Envanter Güncellendi": "Inventory Item Updated",
             "Envanter Silindi": "Inventory Item Deleted",
+            "Ürün Eklendi": "Product Added",
+            "Ürün Güncellendi": "Product Updated",
+            "Ürün Silindi": "Product Deleted",
+            "Süreç Eklendi": "Process Created",
             "Süreç Tanımlandı": "Process Created",
             "Süreç Güncellendi": "Process Updated",
             "Süreç Silindi": "Process Deleted",
@@ -532,14 +537,19 @@ export default function Overview({
             .replace("Yeni kullanıcı oluşturuldu: ", "New user created: ")
             .replace("Kullanıcı silindi: ", "User deleted: ")
             .replace("Yeni mağaza tanımlandı: ", "New store created: ")
+            .replace("Yeni mağaza oluşturuldu: ", "New store created: ")
             .replace("Mağaza bilgileri güncellendi: ", "Store details updated: ")
             .replace("Mağaza silindi: ", "Store deleted: ")
             .replace("Envanter ürünü tanımlandı: ", "Inventory item created: ")
             .replace("Envanter ürünü güncellendi: ", "Inventory item updated: ")
             .replace("Envanter ürünü silindi: ", "Inventory item deleted: ")
+            .replace("Yeni ürün eklendi: ", "New product added: ")
+            .replace("Ürün bilgileri güncellendi: ", "Product details updated: ")
+            .replace("Ürün silindi: ", "Product deleted: ")
             .replace("Yeni süreç oluşturuldu: ", "New process created: ")
             .replace("Süreç bilgileri güncellendi: ", "Process details updated: ")
             .replace("Süreç silindi: ", "Process deleted: ")
+            .replace("Süreç silindi: ID ", "Process deleted: ID ")
             .replace("Kullanıcı şifresini değiştirdi", "User changed password")
             .replace(" şifre sıfırlama talebi onaylandı", " password reset request resolved");
         };

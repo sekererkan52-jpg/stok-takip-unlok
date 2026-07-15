@@ -231,7 +231,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col justify-between transform bg-slate-950/90 backdrop-blur-xl border-r border-slate-900/60 text-slate-350 transition-transform lg:static lg:translate-x-0 ${
@@ -331,7 +331,7 @@ export default function Dashboard() {
       )}
 
       {/* Main */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col h-screen overflow-y-auto">
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200/50 bg-slate-50/70 px-4 backdrop-blur-md lg:px-8">
           <div className="flex items-center gap-3">
             <button

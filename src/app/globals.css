@@ -225,5 +225,10 @@
   border-color: #6366f1 !important;
 }
 
+.dark .bg-slate-100 {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+}
 
-
+.dark .bg-slate-100:hover {
+  background-color: rgba(51, 65, 85, 0.9) !important;
+}

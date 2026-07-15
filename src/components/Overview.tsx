@@ -503,6 +503,47 @@ export default function Overview({
           new Set(activityLogs.map((log) => log.action).filter(Boolean))
         );
 
+        const translateLogAction = (action: string) => {
+          if (lang === "TR") return action;
+          const map: Record<string, string> = {
+            "Kullanıcı Güncellendi": "User Updated",
+            "Kullanıcı Tanımlandı": "User Created",
+            "Kullanıcı Silindi": "User Deleted",
+            "Mağaza Tanımlandı": "Store Created",
+            "Mağaza Güncellendi": "Store Updated",
+            "Mağaza Silindi": "Store Deleted",
+            "Envanter Tanımlandı": "Inventory Item Created",
+            "Envanter Güncellendi": "Inventory Item Updated",
+            "Envanter Silindi": "Inventory Item Deleted",
+            "Süreç Tanımlandı": "Process Created",
+            "Süreç Güncellendi": "Process Updated",
+            "Süreç Silindi": "Process Deleted",
+            "Şifre Değiştirildi": "Password Changed",
+            "Şifre Sıfırlandı": "Password Reset Request Resolved",
+            "Kullanıcı Şifresi Değiştirildi": "User Password Changed",
+          };
+          return map[action] || action;
+        };
+
+        const translateLogDetails = (details: string) => {
+          if (lang === "TR") return details;
+          return details
+            .replace("Kullanıcı bilgileri güncellendi: ", "User details updated: ")
+            .replace("Yeni kullanıcı oluşturuldu: ", "New user created: ")
+            .replace("Kullanıcı silindi: ", "User deleted: ")
+            .replace("Yeni mağaza tanımlandı: ", "New store created: ")
+            .replace("Mağaza bilgileri güncellendi: ", "Store details updated: ")
+            .replace("Mağaza silindi: ", "Store deleted: ")
+            .replace("Envanter ürünü tanımlandı: ", "Inventory item created: ")
+            .replace("Envanter ürünü güncellendi: ", "Inventory item updated: ")
+            .replace("Envanter ürünü silindi: ", "Inventory item deleted: ")
+            .replace("Yeni süreç oluşturuldu: ", "New process created: ")
+            .replace("Süreç bilgileri güncellendi: ", "Process details updated: ")
+            .replace("Süreç silindi: ", "Process deleted: ")
+            .replace("Kullanıcı şifresini değiştirdi", "User changed password")
+            .replace(" şifre sıfırlama talebi onaylandı", " password reset request resolved");
+        };
+
         const filteredLogs = activityLogs.filter((log) => {
           if (logActionFilter && log.action !== logActionFilter) {
             return false;
@@ -547,7 +588,7 @@ export default function Overview({
                     <option value="">{t("allActions")}</option>
                     {uniqueActions.map((act) => (
                       <option key={act} value={act}>
-                        {act}
+                        {translateLogAction(act)}
                       </option>
                     ))}
                   </select>
@@ -598,14 +639,14 @@ export default function Overview({
                             log.action.includes("Güncelle") || log.action.includes("Şifre") ? "bg-blue-50 text-blue-700 border border-blue-100" :
                             "bg-rose-50 text-rose-700 border border-rose-100"
                           }`}>
-                            {log.action}
+                            {translateLogAction(log.action)}
                           </span>
                           <span className="text-xs font-semibold text-slate-800">
                             @{log.username || "sistem"} ({log.userFullName || "Bilinmiyor"})
                           </span>
                         </div>
                         <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-medium">
-                          {log.details}
+                          {translateLogDetails(log.details)}
                         </p>
                         <p className="text-[10px] text-slate-400 mt-1">
                           {lang === "TR" ? "Zaman: " : "Time: "} {new Date(log.createdAt).toLocaleString(lang === "TR" ? "tr-TR" : "en-US")}
